@@ -31,9 +31,9 @@ analyze:
 test:
 	$(RUN) flutter test
 
-## web     : lancer l'app en mode web (http://localhost:8080)
+## web     : lancer l'app en mode web (http://localhost:8090)
 web:
-	$(RUNP) flutter run -d web-server --web-hostname 0.0.0.0 --web-port 8090
+	$(RUNP) flutter run -d web-server --web-hostname 0.0.0.0 --web-port 8080
 
 ## apk     : builder l'APK Android (release)
 apk:

@@ -70,6 +70,11 @@
           "id": "someday-my-prince-grid",
           "type": "chordGrid",
           "asset": "assets/charts/someday-my-prince.json"
+        },
+        {
+          "id": "someday-my-prince-score",
+          "type": "score",
+          "asset": "assets/scores/someday-my-prince.abc"
         }
       ],
       "artist": "Frank Churchill"
@@ -134,6 +139,11 @@
           "id": "summertime-grid",
           "type": "chordGrid",
           "asset": "assets/charts/summertime.json"
+        },
+        {
+          "id": "summertime-score",
+          "type": "score",
+          "asset": "assets/scores/summertime.abc"
         }
       ],
       "artist": "George Gershwin"
@@ -166,6 +176,11 @@
           "id": "all-the-things-you-are-grid",
           "type": "chordGrid",
           "asset": "assets/charts/all-the-things-you-are.json"
+        },
+        {
+          "id": "all-the-things-you-are-score",
+          "type": "score",
+          "asset": "assets/scores/all-the-things-you-are.abc"
         }
       ],
       "artist": "Jerome Kern"

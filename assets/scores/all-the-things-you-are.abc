@@ -1,0 +1,13 @@
+X:1
+T:All the Things You Are
+C:Jerome Kern (domaine public en UE)
+M:4/4
+L:1/8
+Q:1/4=132
+K:Ab
+% Section A
+"F-7" z2 c2 c2 c2 | "Bb-7" B2 B2 B4 | "Eb7" B2 A2 G4 | "Ab^7" A8 |
+"Db^7" z2 f2 f2 f2 | "D-7" e2 e2 "G7" e4 | "C^7" e2 d2 c4 | "C^7" c8 |
+% Section B
+"C-7" z2 g2 g2 g2 | "F-7" f2 f2 f4 | "Bb7" f2 e2 d4 | "Eb^7" e8 |
+"Ab^7" z2 c2 c2 c2 | "Ah7" B2 B2 "D7" B4 | "G^7" B2 A2 G4 | "G^7" G8 |]
