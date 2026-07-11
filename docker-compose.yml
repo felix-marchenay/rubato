@@ -22,17 +22,6 @@ services:
     stdin_open: true
     tty: true
 
-  # Proxy d'agrégation (recherche de morceaux en ligne : LRCLIB, The Session…).
-  # L'app Flutter (web + APK) tape ce seul endpoint pour contourner le CORS.
-  proxy:
-    build:
-      context: ./proxy
-      dockerfile: Dockerfile
-    image: rubato-proxy:local
-    ports:
-      - "8091:8091" # http://localhost:8091
-    restart: unless-stopped
-
 volumes:
   pub-cache:
   gradle-cache:

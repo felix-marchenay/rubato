@@ -4,11 +4,12 @@ import 'package:http/http.dart' as http;
 
 import '../domain/song.dart';
 
-/// URL de base du proxy d'agrégation. Surchargeable au build :
-///   flutter run  --dart-define=RUBATO_API=http://localhost:8091
-///   flutter build apk --dart-define=RUBATO_API=https://mon-proxy.example
-const String _apiBase =
-    String.fromEnvironment('RUBATO_API', defaultValue: 'http://localhost:8091');
+/// URL de base du backend de recherche (fonction Netlify). Surchargeable au
+/// build : `--dart-define=RUBATO_API=https://autre-backend.example`.
+const String _apiBase = String.fromEnvironment(
+  'RUBATO_API',
+  defaultValue: 'https://rubato1.netlify.app',
+);
 
 /// Référence source d'une représentation (à passer à `/representation`).
 class RemoteRef {

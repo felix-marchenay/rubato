@@ -1,8 +1,7 @@
-# Déploiement du backend Rubato (proxy d'agrégation) sur Netlify.
+# Déploiement du backend Rubato (recherche de morceaux en ligne) sur Netlify.
 #
-# Netlify n'exécute pas de serveur Python persistant : le proxy FastAPI de
-# ./proxy (dev local via Docker) est ici porté en **Netlify Function** (Node),
-# qui expose les mêmes routes : /health, /search, /representation.
+# Le backend est une **Netlify Function** (Node) qui expose les routes
+# /health, /search, /representation (agrégation LRCLIB + The Session).
 #
 # Pas de build applicatif ici (le web Flutter n'est PAS déployé par ce fichier) :
 # on publie une page statique minimale + la function.

@@ -4,12 +4,11 @@
 RUN  := docker compose run --rm flutter
 RUNP := docker compose run --rm --service-ports flutter
 
-# URL du proxy d'agrégation (recherche en ligne). Surchargeable :
-#   make web  RUBATO_API=http://192.168.1.10:8091
-#   make apk  RUBATO_API=https://mon-proxy.example
-RUBATO_API ?= http://localhost:8091
+# Backend de recherche en ligne (fonction Netlify). Surchargeable :
+#   make web  RUBATO_API=https://autre-backend.example
+RUBATO_API ?= https://rubato1.netlify.app
 
-.PHONY: build shell create get analyze test web apk telegram apk-telegram clean doctor proxy
+.PHONY: build shell create get analyze test web apk telegram apk-telegram clean doctor
 
 ## build   : construire l'image Docker de dev
 build:
@@ -40,10 +39,6 @@ test:
 web:
 	$(RUNP) flutter run -d web-server --web-hostname 0.0.0.0 --web-port 8080 \
 		--dart-define=RUBATO_API=$(RUBATO_API)
-
-## proxy   : lancer le proxy d'agrégation (recherche en ligne) en arrière-plan
-proxy:
-	docker compose up -d proxy
 
 ## apk     : builder l'APK Android (release)
 apk:
