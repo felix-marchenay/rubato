@@ -5,23 +5,26 @@
 Objectif : prouver le concept et poser l'architecture « morceau → représentations ».
 
 1. **Init projet Flutter** (structure, thème de base, cible Android phone+tablette).
-2. **Modèle de données** `Song` / `Representation` (voir DATA-MODEL.md).
-3. **Catalogue fourni** : quelques `.cho` + `catalog.json` en assets, chargement.
-4. **Parseur ChordPro** minimal (accords `[..]`, directives `{..}`, sections).
+2. **Modèle de domaine** `Song` / `Representation` + `ChordChart` / `Section` /
+   `Bar` / `Chord` (voir DATA-MODEL.md & CHORD-GRID.md).
+3. **Couche codec** : interface `ChordChartCodec` + `JsonChordChartCodec` (v0).
+4. **Catalogue fourni** : `catalog.json` + charts JSON en assets, chargement.
 5. **Écran Bibliothèque** : liste des morceaux + recherche simple.
-6. **Écran Lecture** : rendu de la grille (accords alignés au-dessus des paroles).
-7. **Responsive** phone / tablette.
-8. Finitions : icône, splash, build APK.
+6. **Écran Lecture** : rendu de la grille (mesures + accords, tonalité +
+   signature rythmique en tête), responsive.
+7. Finitions : icône, splash, build APK.
 
 Critère de sortie v0 : ouvrir l'app, choisir un morceau du catalogue, lire sa
-grille d'accords correctement mise en forme, hors-ligne, sur phone et tablette.
+grille d'accords (mesures/accords/tonalité/rythme) correctement mise en forme,
+hors-ligne, sur phone et tablette.
 
-## v1 — Confort de lecture
+## v1 — Grille d'accords complète + confort de lecture
 
+- Sections/repères (A/B, Intro/Chorus), reprises `{ }`, fins alternatives N1/N2.
+- **Import iReal Pro** (`IRealProCodec`) pour amorcer le catalogue.
 - Transposition (+ affichage capo).
 - Auto-scroll réglable.
 - Réglages : taille de police, thème sombre.
-- Navigation par sections.
 
 ## v2 — Contenu utilisateur
 
@@ -32,6 +35,7 @@ grille d'accords correctement mise en forme, hors-ligne, sur phone et tablette.
 
 ## v3+ — Multi-représentations & au-delà
 
+- Représentation **paroles + accords** (type ChordPro).
 - Représentation **tablature**.
 - Représentation **partition** (MusicXML) et/ou **PDF/image**.
 - Éventuellement : sync cloud / comptes, partage, tourne-page Bluetooth,

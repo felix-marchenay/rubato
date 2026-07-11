@@ -1,0 +1,6 @@
+.git
+build/
+.dart_tool/
+.gradle/
+**/*.iml
+.idea/

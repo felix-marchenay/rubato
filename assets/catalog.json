@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "songs": [
+    {
+      "id": "autumn-leaves",
+      "title": "Autumn Leaves",
+      "artist": "Joseph Kosma",
+      "tags": ["jazz", "standard"],
+      "representations": [
+        { "id": "autumn-leaves-grid", "type": "chordGrid", "asset": "assets/charts/autumn-leaves.json" }
+      ]
+    },
+    {
+      "id": "blue-bossa",
+      "title": "Blue Bossa",
+      "artist": "Kenny Dorham",
+      "tags": ["jazz", "bossa"],
+      "representations": [
+        { "id": "blue-bossa-grid", "type": "chordGrid", "asset": "assets/charts/blue-bossa.json" }
+      ]
+    },
+    {
+      "id": "someday-my-prince",
+      "title": "Someday My Prince Will Come",
+      "artist": "Frank Churchill",
+      "tags": ["jazz", "waltz"],
+      "representations": [
+        { "id": "someday-my-prince-grid", "type": "chordGrid", "asset": "assets/charts/someday-my-prince.json" }
+      ]
+    },
+    {
+      "id": "blues-in-c",
+      "title": "Twelve-Bar Blues in C",
+      "artist": "Traditional",
+      "tags": ["blues"],
+      "representations": [
+        { "id": "blues-in-c-grid", "type": "chordGrid", "asset": "assets/charts/blues-in-c.json" }
+      ]
+    }
+  ]
+}

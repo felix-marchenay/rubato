@@ -1,0 +1,53 @@
+name: CI
+
+# Analyse statique + tests + builds (web & APK Android).
+# Tourne dans la même image que l'environnement de dev local (cirruslabs/flutter)
+# pour garantir CI == local. Version Flutter pinnée pour la reproductibilité.
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Analyse · tests · builds
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/cirruslabs/flutter:3.44.0
+    steps:
+      - uses: actions/checkout@v4
+
+      # Le repo est checkout par root dans le conteneur : éviter le refus
+      # "dubious ownership" de git.
+      - name: Autoriser le workspace pour git
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Version Flutter
+        run: flutter --version
+
+      - name: Dépendances
+        run: flutter pub get
+
+      - name: Analyse statique
+        run: flutter analyze
+
+      - name: Tests
+        run: flutter test
+
+      - name: Build web
+        run: flutter build web --release
+
+      - name: Build APK (debug)
+        run: flutter build apk --debug
+
+      - name: Publier l'APK en artefact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mscore-debug-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
+          if-no-files-found: error

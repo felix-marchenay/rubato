@@ -1,0 +1,23 @@
+{
+  "key": "C",
+  "time": "4/4",
+  "sections": [
+    {
+      "label": "Blues",
+      "bars": [
+        { "chords": ["C7"] },
+        { "chords": ["F7"] },
+        { "chords": ["C7"] },
+        { "chords": ["C7"] },
+        { "chords": ["F7"] },
+        { "chords": ["F7"] },
+        { "chords": ["C7"] },
+        { "chords": ["C7"] },
+        { "chords": ["G7"] },
+        { "chords": ["F7"] },
+        { "chords": ["C7"] },
+        { "chords": ["G7"] }
+      ]
+    }
+  ]
+}

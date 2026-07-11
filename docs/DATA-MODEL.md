@@ -28,33 +28,39 @@ Une façon de présenter le morceau. Type discriminant + contenu spécifique.
 
 ```dart
 enum RepresentationType {
-  chordGrid,   // ChordPro — SEUL implémenté en v0
+  chordGrid,   // grille d'accords style iReal Pro — SEUL implémenté en v0
   tablature,   // futur
+  lyrics,      // futur (paroles + accords, type ChordPro)
   score,       // futur (MusicXML/notation)
   pdf,         // futur
   image,       // futur
 }
 ```
 
+Pour `chordGrid`, le `content` est un **`ChordChart`** (modèle de domaine
+structuré, voir [CHORD-GRID.md](CHORD-GRID.md)) — PAS une chaîne de format.
+
 ## v0 : ce qu'on code réellement
 
 - `Song` avec au moins **une** représentation `chordGrid`.
-- `chordGrid.content` = texte **ChordPro** brut ; le parsing/rendu se fait à la lecture.
+- Le contenu de `chordGrid` est un `ChordChart` structuré (sections → bars →
+  chords). En v0 : mesures + accords + tonalité + signature rythmique.
+- La (dé)sérialisation passe par un **codec** (`ChordChartCodec`) ; v0 =
+  `JsonChordChartCodec`. Le modèle ne dépend d'aucun format.
 - Les autres types existent dans l'enum mais ne sont ni stockés ni rendus.
 
 ## Persistance (v0)
 
 Catalogue **fourni** et lecture seule → le plus simple :
 
-- Option A (retenue par défaut) : fichiers `.cho` (ChordPro) + un `catalog.json`
-  décrivant les morceaux et leurs représentations, embarqués dans les assets.
-- Option B : base locale (Isar/Drift) — à introduire quand on ajoutera
-  l'édition / l'ajout par l'utilisateur (post-v0).
-
-Décision : **Option A pour la v0**, migration vers une base quand la saisie
-utilisateur arrive.
+- **Retenu** : assets JSON embarqués — un `catalog.json` (liste des morceaux +
+  leurs représentations), les charts décodés par `JsonChordChartCodec`.
+- Base locale (Isar/Drift) : introduite plus tard, quand l'édition / l'ajout
+  par l'utilisateur arrive.
 
 ## Évolutivité
 
-Ajouter une représentation = ajouter une valeur d'enum + un widget de rendu
-dédié + (si besoin) un parseur. Aucune refonte du modèle `Song`.
+- Ajouter une **représentation** = valeur d'enum + widget de rendu dédié
+  (+ codec si besoin). Aucune refonte de `Song`.
+- Changer le **format de stockage** d'une grille = nouveau `ChordChartCodec`
+  (ex. `IRealProCodec`). Aucun impact sur le rendu ni la logique.
