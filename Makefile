@@ -4,7 +4,7 @@
 RUN  := docker compose run --rm flutter
 RUNP := docker compose run --rm --service-ports flutter
 
-.PHONY: build shell create get analyze test web apk clean doctor
+.PHONY: build shell create get analyze test web apk telegram apk-telegram clean doctor
 
 ## build   : construire l'image Docker de dev
 build:
@@ -38,6 +38,14 @@ web:
 ## apk     : builder l'APK Android (release)
 apk:
 	$(RUN) flutter build apk --release
+
+## telegram: envoyer l'APK déjà buildé sur Telegram (config dans .env)
+telegram:
+	$(RUN) bash scripts/send-telegram.sh
+
+## apk-telegram : builder l'APK PUIS l'envoyer sur Telegram
+apk-telegram: apk
+	$(RUN) bash scripts/send-telegram.sh
 
 ## shell   : ouvrir un shell dans le conteneur
 shell:

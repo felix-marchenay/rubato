@@ -1,3 +1,6 @@
+# Secrets locaux (tokens Telegram, etc.) — jamais commités.
+.env
+
 # Miscellaneous
 *.class
 *.log
