@@ -1,6 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Requis pour récupérer les paroles en ligne (LRCLIB). -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
-        android:label="mscore"
+        android:label="Rubato"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

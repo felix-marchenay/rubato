@@ -2,8 +2,10 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart' show rootBundle;
 
+import '../codec/chordpro_codec.dart';
 import '../codec/json_chord_chart_codec.dart';
 import '../domain/chord_chart.dart';
+import '../domain/lyric_sheet.dart';
 import '../domain/song.dart';
 
 /// Charge le catalogue et les grilles depuis les assets embarqués.
@@ -12,6 +14,7 @@ class CatalogRepository {
   const CatalogRepository();
 
   static const _codec = JsonChordChartCodec();
+  static const _chordPro = ChordProCodec();
 
   Future<List<Song>> loadSongs() async {
     final raw = await rootBundle.loadString('assets/catalog.json');
@@ -22,6 +25,11 @@ class CatalogRepository {
   Future<ChordChart> loadChart(Representation rep) async {
     final raw = await rootBundle.loadString(rep.assetPath);
     return _codec.decode(raw);
+  }
+
+  Future<LyricSheet> loadLyrics(Representation rep) async {
+    final raw = await rootBundle.loadString(rep.assetPath);
+    return _chordPro.decode(raw);
   }
 
   Song _songFromMap(dynamic e) {

@@ -1,0 +1,54 @@
+{
+  "key": "Am",
+  "time": "4/4",
+  "sections": [
+    {
+      "label": "A",
+      "bars": [
+        {
+          "chords": [
+            "A-^7"
+          ]
+        },
+        {
+          "chords": [
+            "A-^7"
+          ]
+        },
+        {
+          "chords": [
+            "C-7",
+            "F7"
+          ]
+        },
+        {
+          "chords": [
+            "Bb^7"
+          ]
+        },
+        {
+          "chords": [
+            "Bb-7",
+            "Eb7"
+          ]
+        },
+        {
+          "chords": [
+            "Ab^7"
+          ]
+        },
+        {
+          "chords": [
+            "Ab-7",
+            "Db7"
+          ]
+        },
+        {
+          "chords": [
+            "Gb^7"
+          ]
+        }
+      ]
+    }
+  ]
+}

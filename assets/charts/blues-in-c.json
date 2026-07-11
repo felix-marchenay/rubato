@@ -5,18 +5,66 @@
     {
       "label": "Blues",
       "bars": [
-        { "chords": ["C7"] },
-        { "chords": ["F7"] },
-        { "chords": ["C7"] },
-        { "chords": ["C7"] },
-        { "chords": ["F7"] },
-        { "chords": ["F7"] },
-        { "chords": ["C7"] },
-        { "chords": ["C7"] },
-        { "chords": ["G7"] },
-        { "chords": ["F7"] },
-        { "chords": ["C7"] },
-        { "chords": ["G7"] }
+        {
+          "chords": [
+            "C7"
+          ]
+        },
+        {
+          "chords": [
+            "F7"
+          ]
+        },
+        {
+          "chords": [
+            "C7"
+          ]
+        },
+        {
+          "chords": [
+            "C7"
+          ]
+        },
+        {
+          "chords": [
+            "F7"
+          ]
+        },
+        {
+          "chords": [
+            "F7"
+          ]
+        },
+        {
+          "chords": [
+            "C7"
+          ]
+        },
+        {
+          "chords": [
+            "C7"
+          ]
+        },
+        {
+          "chords": [
+            "G7"
+          ]
+        },
+        {
+          "chords": [
+            "F7"
+          ]
+        },
+        {
+          "chords": [
+            "C7"
+          ]
+        },
+        {
+          "chords": [
+            "G7"
+          ]
+        }
       ]
     }
   ]

@@ -1,0 +1,31 @@
+{
+  "key": "C",
+  "time": "4/4",
+  "sections": [
+    {
+      "label": "A",
+      "bars": [
+        {
+          "chords": [
+            "C7"
+          ]
+        },
+        {
+          "chords": [
+            "F"
+          ]
+        },
+        {
+          "chords": [
+            "G"
+          ]
+        },
+        {
+          "chords": [
+            "C"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -39,6 +39,9 @@ dependencies:
   # Fraunces (serif gravé) + Manrope (sans interface).
   google_fonts: ^6.2.1
 
+  # Requêtes HTTP (récupération des paroles via LRCLIB).
+  http: ^1.2.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -64,6 +67,7 @@ flutter:
   assets:
     - assets/catalog.json
     - assets/charts/
+    - assets/lyrics/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

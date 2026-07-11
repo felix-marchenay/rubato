@@ -1,0 +1,98 @@
+{
+  "key": "Ab",
+  "time": "4/4",
+  "sections": [
+    {
+      "label": "A",
+      "bars": [
+        {
+          "chords": [
+            "F-7"
+          ]
+        },
+        {
+          "chords": [
+            "Bb-7"
+          ]
+        },
+        {
+          "chords": [
+            "Eb7"
+          ]
+        },
+        {
+          "chords": [
+            "Ab^7"
+          ]
+        },
+        {
+          "chords": [
+            "Db^7"
+          ]
+        },
+        {
+          "chords": [
+            "D-7",
+            "G7"
+          ]
+        },
+        {
+          "chords": [
+            "C^7"
+          ]
+        },
+        {
+          "chords": [
+            "C^7"
+          ]
+        }
+      ]
+    },
+    {
+      "label": "B",
+      "bars": [
+        {
+          "chords": [
+            "C-7"
+          ]
+        },
+        {
+          "chords": [
+            "F-7"
+          ]
+        },
+        {
+          "chords": [
+            "Bb7"
+          ]
+        },
+        {
+          "chords": [
+            "Eb^7"
+          ]
+        },
+        {
+          "chords": [
+            "Ab^7"
+          ]
+        },
+        {
+          "chords": [
+            "Ah7",
+            "D7"
+          ]
+        },
+        {
+          "chords": [
+            "G^7"
+          ]
+        },
+        {
+          "chords": [
+            "G^7"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "key": "D",
+  "time": "4/4",
+  "sections": [
+    {
+      "label": "A",
+      "bars": [
+        {
+          "chords": [
+            "D^7"
+          ]
+        },
+        {
+          "chords": [
+            "Bb7"
+          ]
+        },
+        {
+          "chords": [
+            "A-7"
+          ]
+        },
+        {
+          "chords": [
+            "D7"
+          ]
+        },
+        {
+          "chords": [
+            "G^7"
+          ]
+        },
+        {
+          "chords": [
+            "G-6"
+          ]
+        },
+        {
+          "chords": [
+            "F#-7"
+          ]
+        },
+        {
+          "chords": [
+            "B7"
+          ]
+        },
+        {
+          "chords": [
+            "E-7"
+          ]
+        },
+        {
+          "chords": [
+            "A7"
+          ]
+        },
+        {
+          "chords": [
+            "D6"
+          ]
+        },
+        {
+          "chords": [
+            "A7"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "key": "Cm",
+  "time": "4/4",
+  "sections": [
+    {
+      "label": "A",
+      "bars": [
+        {
+          "chords": [
+            "C-7"
+          ]
+        },
+        {
+          "chords": [
+            "Bb"
+          ]
+        },
+        {
+          "chords": [
+            "Ab"
+          ]
+        },
+        {
+          "chords": [
+            "Ab"
+          ]
+        },
+        {
+          "chords": [
+            "C-7"
+          ]
+        },
+        {
+          "chords": [
+            "Bb"
+          ]
+        },
+        {
+          "chords": [
+            "Ab"
+          ]
+        },
+        {
+          "chords": [
+            "Bb"
+          ]
+        }
+      ]
+    }
+  ]
+}

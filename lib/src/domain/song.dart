@@ -64,9 +64,14 @@ class Song {
   });
 
   /// Première représentation « grille d'accords », ou null.
-  Representation? get primaryChordGrid {
+  Representation? get primaryChordGrid => _first(RepresentationType.chordGrid);
+
+  /// Première représentation « paroles + accords » (ChordPro), ou null.
+  Representation? get primaryLyrics => _first(RepresentationType.lyrics);
+
+  Representation? _first(RepresentationType type) {
     for (final r in representations) {
-      if (r.type == RepresentationType.chordGrid) return r;
+      if (r.type == type) return r;
     }
     return null;
   }

@@ -5,14 +5,47 @@
     {
       "label": "A",
       "bars": [
-        { "chords": ["Bb^7"] },
-        { "chords": ["G-7"] },
-        { "chords": ["C-7"] },
-        { "chords": ["F7"] },
-        { "chords": ["Bb^7"] },
-        { "chords": ["G-7"] },
-        { "chords": ["C-7", "F7"] },
-        { "chords": ["Bb^7"] }
+        {
+          "chords": [
+            "Bb^7"
+          ]
+        },
+        {
+          "chords": [
+            "G-7"
+          ]
+        },
+        {
+          "chords": [
+            "C-7"
+          ]
+        },
+        {
+          "chords": [
+            "F7"
+          ]
+        },
+        {
+          "chords": [
+            "Bb^7"
+          ]
+        },
+        {
+          "chords": [
+            "G-7"
+          ]
+        },
+        {
+          "chords": [
+            "C-7",
+            "F7"
+          ]
+        },
+        {
+          "chords": [
+            "Bb^7"
+          ]
+        }
       ]
     }
   ]

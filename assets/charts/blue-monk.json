@@ -1,0 +1,73 @@
+{
+  "key": "Bb",
+  "time": "4/4",
+  "sections": [
+    {
+      "label": "Blues",
+      "bars": [
+        {
+          "chords": [
+            "Bb7"
+          ]
+        },
+        {
+          "chords": [
+            "Eb7"
+          ]
+        },
+        {
+          "chords": [
+            "Bb7"
+          ]
+        },
+        {
+          "chords": [
+            "Bb7"
+          ]
+        },
+        {
+          "chords": [
+            "Eb7"
+          ]
+        },
+        {
+          "chords": [
+            "Eb7"
+          ]
+        },
+        {
+          "chords": [
+            "Bb7"
+          ]
+        },
+        {
+          "chords": [
+            "G7"
+          ]
+        },
+        {
+          "chords": [
+            "C-7"
+          ]
+        },
+        {
+          "chords": [
+            "F7"
+          ]
+        },
+        {
+          "chords": [
+            "Bb7",
+            "G7"
+          ]
+        },
+        {
+          "chords": [
+            "C-7",
+            "F7"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "key": "Fm",
+  "time": "4/4",
+  "sections": [
+    {
+      "label": "A",
+      "bars": [
+        {
+          "chords": [
+            "F-7"
+          ]
+        },
+        {
+          "chords": [
+            "C-7"
+          ]
+        },
+        {
+          "chords": [
+            "Db^7"
+          ]
+        },
+        {
+          "chords": [
+            "Eb"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -18,7 +18,7 @@ services:
       - pub-cache:/home/dev/.pub-cache
       - gradle-cache:/home/dev/.gradle
     ports:
-      - "8080:8080" # serveur web Flutter (make web)
+      - "8090:8080" # serveur web Flutter (make web)
     stdin_open: true
     tty: true
 

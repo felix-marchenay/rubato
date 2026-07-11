@@ -4,38 +4,1585 @@
     {
       "id": "autumn-leaves",
       "title": "Autumn Leaves",
-      "artist": "Joseph Kosma",
-      "tags": ["jazz", "standard"],
+      "tags": [
+        "jazz",
+        "standard"
+      ],
       "representations": [
-        { "id": "autumn-leaves-grid", "type": "chordGrid", "asset": "assets/charts/autumn-leaves.json" }
-      ]
+        {
+          "id": "autumn-leaves-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/autumn-leaves.json"
+        }
+      ],
+      "artist": "Joseph Kosma"
     },
     {
       "id": "blue-bossa",
       "title": "Blue Bossa",
-      "artist": "Kenny Dorham",
-      "tags": ["jazz", "bossa"],
+      "tags": [
+        "jazz",
+        "bossa"
+      ],
       "representations": [
-        { "id": "blue-bossa-grid", "type": "chordGrid", "asset": "assets/charts/blue-bossa.json" }
-      ]
-    },
-    {
-      "id": "someday-my-prince",
-      "title": "Someday My Prince Will Come",
-      "artist": "Frank Churchill",
-      "tags": ["jazz", "waltz"],
-      "representations": [
-        { "id": "someday-my-prince-grid", "type": "chordGrid", "asset": "assets/charts/someday-my-prince.json" }
-      ]
+        {
+          "id": "blue-bossa-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/blue-bossa.json"
+        }
+      ],
+      "artist": "Kenny Dorham"
     },
     {
       "id": "blues-in-c",
       "title": "Twelve-Bar Blues in C",
-      "artist": "Traditional",
-      "tags": ["blues"],
+      "tags": [
+        "blues"
+      ],
       "representations": [
-        { "id": "blues-in-c-grid", "type": "chordGrid", "asset": "assets/charts/blues-in-c.json" }
-      ]
+        {
+          "id": "blues-in-c-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/blues-in-c.json"
+        },
+        {
+          "id": "blues-in-c-lyrics",
+          "type": "lyrics",
+          "asset": "assets/lyrics/blues-in-c.pro"
+        }
+      ],
+      "artist": "Traditional"
+    },
+    {
+      "id": "someday-my-prince",
+      "title": "Someday My Prince Will Come",
+      "tags": [
+        "jazz",
+        "waltz"
+      ],
+      "representations": [
+        {
+          "id": "someday-my-prince-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/someday-my-prince.json"
+        }
+      ],
+      "artist": "Frank Churchill"
+    },
+    {
+      "id": "all-of-me",
+      "title": "All of Me",
+      "tags": [
+        "jazz",
+        "standard"
+      ],
+      "representations": [
+        {
+          "id": "all-of-me-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/all-of-me.json"
+        }
+      ],
+      "artist": "Gerald Marks"
+    },
+    {
+      "id": "fly-me-to-the-moon",
+      "title": "Fly Me to the Moon",
+      "tags": [
+        "jazz",
+        "standard"
+      ],
+      "representations": [
+        {
+          "id": "fly-me-to-the-moon-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/fly-me-to-the-moon.json"
+        }
+      ],
+      "artist": "Bart Howard"
+    },
+    {
+      "id": "take-the-a-train",
+      "title": "Take the \"A\" Train",
+      "tags": [
+        "jazz",
+        "standard"
+      ],
+      "representations": [
+        {
+          "id": "take-the-a-train-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/take-the-a-train.json"
+        }
+      ],
+      "artist": "Billy Strayhorn"
+    },
+    {
+      "id": "summertime",
+      "title": "Summertime",
+      "tags": [
+        "jazz",
+        "standard"
+      ],
+      "representations": [
+        {
+          "id": "summertime-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/summertime.json"
+        }
+      ],
+      "artist": "George Gershwin"
+    },
+    {
+      "id": "so-what",
+      "title": "So What",
+      "tags": [
+        "jazz",
+        "modal"
+      ],
+      "representations": [
+        {
+          "id": "so-what-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/so-what.json"
+        }
+      ],
+      "artist": "Miles Davis"
+    },
+    {
+      "id": "all-the-things-you-are",
+      "title": "All the Things You Are",
+      "tags": [
+        "jazz",
+        "standard"
+      ],
+      "representations": [
+        {
+          "id": "all-the-things-you-are-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/all-the-things-you-are.json"
+        }
+      ],
+      "artist": "Jerome Kern"
+    },
+    {
+      "id": "misty",
+      "title": "Misty",
+      "tags": [
+        "jazz",
+        "ballad"
+      ],
+      "representations": [
+        {
+          "id": "misty-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/misty.json"
+        }
+      ],
+      "artist": "Erroll Garner"
+    },
+    {
+      "id": "satin-doll",
+      "title": "Satin Doll",
+      "tags": [
+        "jazz",
+        "standard"
+      ],
+      "representations": [
+        {
+          "id": "satin-doll-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/satin-doll.json"
+        }
+      ],
+      "artist": "Duke Ellington"
+    },
+    {
+      "id": "girl-from-ipanema",
+      "title": "The Girl from Ipanema",
+      "tags": [
+        "jazz",
+        "bossa"
+      ],
+      "representations": [
+        {
+          "id": "girl-from-ipanema-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/girl-from-ipanema.json"
+        }
+      ],
+      "artist": "Antonio Carlos Jobim"
+    },
+    {
+      "id": "wave",
+      "title": "Wave",
+      "tags": [
+        "jazz",
+        "bossa"
+      ],
+      "representations": [
+        {
+          "id": "wave-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/wave.json"
+        }
+      ],
+      "artist": "Antonio Carlos Jobim"
+    },
+    {
+      "id": "black-orpheus",
+      "title": "Manhã de Carnaval",
+      "tags": [
+        "jazz",
+        "bossa"
+      ],
+      "representations": [
+        {
+          "id": "black-orpheus-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/black-orpheus.json"
+        }
+      ],
+      "artist": "Luiz Bonfá"
+    },
+    {
+      "id": "cantaloupe-island",
+      "title": "Cantaloupe Island",
+      "tags": [
+        "jazz",
+        "modal"
+      ],
+      "representations": [
+        {
+          "id": "cantaloupe-island-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/cantaloupe-island.json"
+        }
+      ],
+      "artist": "Herbie Hancock"
+    },
+    {
+      "id": "watermelon-man",
+      "title": "Watermelon Man",
+      "tags": [
+        "jazz",
+        "funk"
+      ],
+      "representations": [
+        {
+          "id": "watermelon-man-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/watermelon-man.json"
+        }
+      ],
+      "artist": "Herbie Hancock"
+    },
+    {
+      "id": "song-for-my-father",
+      "title": "Song for My Father",
+      "tags": [
+        "jazz",
+        "latin"
+      ],
+      "representations": [
+        {
+          "id": "song-for-my-father-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/song-for-my-father.json"
+        }
+      ],
+      "artist": "Horace Silver"
+    },
+    {
+      "id": "st-thomas",
+      "title": "St. Thomas",
+      "tags": [
+        "jazz",
+        "calypso"
+      ],
+      "representations": [
+        {
+          "id": "st-thomas-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/st-thomas.json"
+        }
+      ],
+      "artist": "Sonny Rollins"
+    },
+    {
+      "id": "blue-monk",
+      "title": "Blue Monk",
+      "tags": [
+        "jazz",
+        "blues"
+      ],
+      "representations": [
+        {
+          "id": "blue-monk-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/blue-monk.json"
+        }
+      ],
+      "artist": "Thelonious Monk"
+    },
+    {
+      "id": "round-midnight",
+      "title": "'Round Midnight",
+      "tags": [
+        "jazz",
+        "ballad"
+      ],
+      "representations": [
+        {
+          "id": "round-midnight-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/round-midnight.json"
+        }
+      ],
+      "artist": "Thelonious Monk"
+    },
+    {
+      "id": "body-and-soul",
+      "title": "Body and Soul",
+      "tags": [
+        "jazz",
+        "ballad"
+      ],
+      "representations": [
+        {
+          "id": "body-and-soul-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/body-and-soul.json"
+        }
+      ],
+      "artist": "Johnny Green"
+    },
+    {
+      "id": "my-funny-valentine",
+      "title": "My Funny Valentine",
+      "tags": [
+        "jazz",
+        "ballad"
+      ],
+      "representations": [
+        {
+          "id": "my-funny-valentine-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/my-funny-valentine.json"
+        }
+      ],
+      "artist": "Richard Rodgers"
+    },
+    {
+      "id": "bye-bye-blackbird",
+      "title": "Bye Bye Blackbird",
+      "tags": [
+        "jazz",
+        "standard"
+      ],
+      "representations": [
+        {
+          "id": "bye-bye-blackbird-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/bye-bye-blackbird.json"
+        }
+      ],
+      "artist": "Ray Henderson"
+    },
+    {
+      "id": "another-you",
+      "title": "There Will Never Be Another You",
+      "tags": [
+        "jazz",
+        "standard"
+      ],
+      "representations": [
+        {
+          "id": "another-you-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/another-you.json"
+        }
+      ],
+      "artist": "Harry Warren"
+    },
+    {
+      "id": "recorda-me",
+      "title": "Recorda Me",
+      "tags": [
+        "jazz",
+        "latin"
+      ],
+      "representations": [
+        {
+          "id": "recorda-me-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/recorda-me.json"
+        }
+      ],
+      "artist": "Joe Henderson"
+    },
+    {
+      "id": "maiden-voyage",
+      "title": "Maiden Voyage",
+      "tags": [
+        "jazz",
+        "modal"
+      ],
+      "representations": [
+        {
+          "id": "maiden-voyage-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/maiden-voyage.json"
+        }
+      ],
+      "artist": "Herbie Hancock"
+    },
+    {
+      "id": "dont-get-around",
+      "title": "Don't Get Around Much Anymore",
+      "tags": [
+        "jazz",
+        "standard"
+      ],
+      "representations": [
+        {
+          "id": "dont-get-around-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/dont-get-around.json"
+        }
+      ],
+      "artist": "Duke Ellington"
+    },
+    {
+      "id": "sentimental-mood",
+      "title": "In a Sentimental Mood",
+      "tags": [
+        "jazz",
+        "ballad"
+      ],
+      "representations": [
+        {
+          "id": "sentimental-mood-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/sentimental-mood.json"
+        }
+      ],
+      "artist": "Duke Ellington"
+    },
+    {
+      "id": "nardis",
+      "title": "Nardis",
+      "tags": [
+        "jazz",
+        "modal"
+      ],
+      "representations": [
+        {
+          "id": "nardis-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/nardis.json"
+        }
+      ],
+      "artist": "Miles Davis"
+    },
+    {
+      "id": "superstition",
+      "title": "Superstition",
+      "tags": [
+        "soul",
+        "funk"
+      ],
+      "representations": [
+        {
+          "id": "superstition-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/superstition.json"
+        }
+      ],
+      "artist": "Stevie Wonder"
+    },
+    {
+      "id": "i-wish",
+      "title": "I Wish",
+      "tags": [
+        "soul",
+        "funk"
+      ],
+      "representations": [
+        {
+          "id": "i-wish-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/i-wish.json"
+        }
+      ],
+      "artist": "Stevie Wonder"
+    },
+    {
+      "id": "higher-ground",
+      "title": "Higher Ground",
+      "tags": [
+        "soul",
+        "funk"
+      ],
+      "representations": [
+        {
+          "id": "higher-ground-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/higher-ground.json"
+        }
+      ],
+      "artist": "Stevie Wonder"
+    },
+    {
+      "id": "sir-duke",
+      "title": "Sir Duke",
+      "tags": [
+        "soul",
+        "funk"
+      ],
+      "representations": [
+        {
+          "id": "sir-duke-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/sir-duke.json"
+        }
+      ],
+      "artist": "Stevie Wonder"
+    },
+    {
+      "id": "you-are-the-sunshine",
+      "title": "You Are the Sunshine of My Life",
+      "tags": [
+        "soul"
+      ],
+      "representations": [
+        {
+          "id": "you-are-the-sunshine-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/you-are-the-sunshine.json"
+        }
+      ],
+      "artist": "Stevie Wonder"
+    },
+    {
+      "id": "isnt-she-lovely",
+      "title": "Isn't She Lovely",
+      "tags": [
+        "soul"
+      ],
+      "representations": [
+        {
+          "id": "isnt-she-lovely-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/isnt-she-lovely.json"
+        }
+      ],
+      "artist": "Stevie Wonder"
+    },
+    {
+      "id": "master-blaster",
+      "title": "Master Blaster (Jammin')",
+      "tags": [
+        "soul",
+        "reggae"
+      ],
+      "representations": [
+        {
+          "id": "master-blaster-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/master-blaster.json"
+        }
+      ],
+      "artist": "Stevie Wonder"
+    },
+    {
+      "id": "dont-you-worry",
+      "title": "Don't You Worry 'bout a Thing",
+      "tags": [
+        "soul",
+        "latin"
+      ],
+      "representations": [
+        {
+          "id": "dont-you-worry-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/dont-you-worry.json"
+        }
+      ],
+      "artist": "Stevie Wonder"
+    },
+    {
+      "id": "living-for-the-city",
+      "title": "Living for the City",
+      "tags": [
+        "soul",
+        "funk"
+      ],
+      "representations": [
+        {
+          "id": "living-for-the-city-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/living-for-the-city.json"
+        }
+      ],
+      "artist": "Stevie Wonder"
+    },
+    {
+      "id": "as-stevie",
+      "title": "As",
+      "tags": [
+        "soul"
+      ],
+      "representations": [
+        {
+          "id": "as-stevie-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/as-stevie.json"
+        }
+      ],
+      "artist": "Stevie Wonder"
+    },
+    {
+      "id": "aint-no-sunshine",
+      "title": "Ain't No Sunshine",
+      "tags": [
+        "soul"
+      ],
+      "representations": [
+        {
+          "id": "aint-no-sunshine-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/aint-no-sunshine.json"
+        }
+      ],
+      "artist": "Bill Withers"
+    },
+    {
+      "id": "lean-on-me",
+      "title": "Lean on Me",
+      "tags": [
+        "soul"
+      ],
+      "representations": [
+        {
+          "id": "lean-on-me-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/lean-on-me.json"
+        }
+      ],
+      "artist": "Bill Withers"
+    },
+    {
+      "id": "stand-by-me",
+      "title": "Stand by Me",
+      "tags": [
+        "soul"
+      ],
+      "representations": [
+        {
+          "id": "stand-by-me-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/stand-by-me.json"
+        }
+      ],
+      "artist": "Ben E. King"
+    },
+    {
+      "id": "my-girl",
+      "title": "My Girl",
+      "tags": [
+        "soul",
+        "motown"
+      ],
+      "representations": [
+        {
+          "id": "my-girl-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/my-girl.json"
+        }
+      ],
+      "artist": "The Temptations"
+    },
+    {
+      "id": "grapevine",
+      "title": "I Heard It Through the Grapevine",
+      "tags": [
+        "soul",
+        "motown"
+      ],
+      "representations": [
+        {
+          "id": "grapevine-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/grapevine.json"
+        }
+      ],
+      "artist": "Marvin Gaye"
+    },
+    {
+      "id": "whats-going-on",
+      "title": "What's Going On",
+      "tags": [
+        "soul"
+      ],
+      "representations": [
+        {
+          "id": "whats-going-on-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/whats-going-on.json"
+        }
+      ],
+      "artist": "Marvin Gaye"
+    },
+    {
+      "id": "lets-stay-together",
+      "title": "Let's Stay Together",
+      "tags": [
+        "soul"
+      ],
+      "representations": [
+        {
+          "id": "lets-stay-together-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/lets-stay-together.json"
+        }
+      ],
+      "artist": "Al Green"
+    },
+    {
+      "id": "respect",
+      "title": "Respect",
+      "tags": [
+        "soul"
+      ],
+      "representations": [
+        {
+          "id": "respect-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/respect.json"
+        }
+      ],
+      "artist": "Otis Redding"
+    },
+    {
+      "id": "dock-of-the-bay",
+      "title": "(Sittin' On) The Dock of the Bay",
+      "tags": [
+        "soul"
+      ],
+      "representations": [
+        {
+          "id": "dock-of-the-bay-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/dock-of-the-bay.json"
+        }
+      ],
+      "artist": "Otis Redding"
+    },
+    {
+      "id": "midnight-hour",
+      "title": "In the Midnight Hour",
+      "tags": [
+        "soul"
+      ],
+      "representations": [
+        {
+          "id": "midnight-hour-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/midnight-hour.json"
+        }
+      ],
+      "artist": "Wilson Pickett"
+    },
+    {
+      "id": "georgia",
+      "title": "Georgia on My Mind",
+      "tags": [
+        "soul",
+        "jazz"
+      ],
+      "representations": [
+        {
+          "id": "georgia-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/georgia.json"
+        }
+      ],
+      "artist": "Hoagy Carmichael"
+    },
+    {
+      "id": "wonderful-world",
+      "title": "What a Wonderful World",
+      "tags": [
+        "jazz",
+        "standard"
+      ],
+      "representations": [
+        {
+          "id": "wonderful-world-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/wonderful-world.json"
+        }
+      ],
+      "artist": "Bob Thiele"
+    },
+    {
+      "id": "valerie",
+      "title": "Valerie",
+      "tags": [
+        "soul",
+        "pop"
+      ],
+      "representations": [
+        {
+          "id": "valerie-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/valerie.json"
+        }
+      ],
+      "artist": "The Zutons"
+    },
+    {
+      "id": "rehab",
+      "title": "Rehab",
+      "tags": [
+        "soul"
+      ],
+      "representations": [
+        {
+          "id": "rehab-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/rehab.json"
+        }
+      ],
+      "artist": "Amy Winehouse"
+    },
+    {
+      "id": "aint-no-mountain",
+      "title": "Ain't No Mountain High Enough",
+      "tags": [
+        "soul",
+        "motown"
+      ],
+      "representations": [
+        {
+          "id": "aint-no-mountain-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/aint-no-mountain.json"
+        }
+      ],
+      "artist": "Marvin Gaye & Tammi Terrell"
+    },
+    {
+      "id": "i-want-you-back",
+      "title": "I Want You Back",
+      "tags": [
+        "soul",
+        "motown",
+        "pop"
+      ],
+      "representations": [
+        {
+          "id": "i-want-you-back-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/i-want-you-back.json"
+        }
+      ],
+      "artist": "The Jackson 5"
+    },
+    {
+      "id": "natural-woman",
+      "title": "(You Make Me Feel Like) A Natural Woman",
+      "tags": [
+        "soul"
+      ],
+      "representations": [
+        {
+          "id": "natural-woman-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/natural-woman.json"
+        }
+      ],
+      "artist": "Aretha Franklin"
+    },
+    {
+      "id": "killing-me-softly",
+      "title": "Killing Me Softly with His Song",
+      "tags": [
+        "soul"
+      ],
+      "representations": [
+        {
+          "id": "killing-me-softly-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/killing-me-softly.json"
+        }
+      ],
+      "artist": "Roberta Flack"
+    },
+    {
+      "id": "lovely-day",
+      "title": "Lovely Day",
+      "tags": [
+        "soul"
+      ],
+      "representations": [
+        {
+          "id": "lovely-day-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/lovely-day.json"
+        }
+      ],
+      "artist": "Bill Withers"
+    },
+    {
+      "id": "september",
+      "title": "September",
+      "tags": [
+        "soul",
+        "funk"
+      ],
+      "representations": [
+        {
+          "id": "september-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/september.json"
+        }
+      ],
+      "artist": "Earth, Wind & Fire"
+    },
+    {
+      "id": "mr-brightside",
+      "title": "Mr. Brightside",
+      "tags": [
+        "pop",
+        "rock",
+        "2000s"
+      ],
+      "representations": [
+        {
+          "id": "mr-brightside-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/mr-brightside.json"
+        }
+      ],
+      "artist": "The Killers"
+    },
+    {
+      "id": "hey-there-delilah",
+      "title": "Hey There Delilah",
+      "tags": [
+        "pop",
+        "2000s"
+      ],
+      "representations": [
+        {
+          "id": "hey-there-delilah-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/hey-there-delilah.json"
+        }
+      ],
+      "artist": "Plain White T's"
+    },
+    {
+      "id": "boulevard",
+      "title": "Boulevard of Broken Dreams",
+      "tags": [
+        "rock",
+        "2000s"
+      ],
+      "representations": [
+        {
+          "id": "boulevard-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/boulevard.json"
+        }
+      ],
+      "artist": "Green Day"
+    },
+    {
+      "id": "clocks",
+      "title": "Clocks",
+      "tags": [
+        "pop",
+        "rock",
+        "2000s"
+      ],
+      "representations": [
+        {
+          "id": "clocks-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/clocks.json"
+        }
+      ],
+      "artist": "Coldplay"
+    },
+    {
+      "id": "chasing-cars",
+      "title": "Chasing Cars",
+      "tags": [
+        "pop",
+        "rock",
+        "2000s"
+      ],
+      "representations": [
+        {
+          "id": "chasing-cars-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/chasing-cars.json"
+        }
+      ],
+      "artist": "Snow Patrol"
+    },
+    {
+      "id": "use-somebody",
+      "title": "Use Somebody",
+      "tags": [
+        "rock",
+        "2000s"
+      ],
+      "representations": [
+        {
+          "id": "use-somebody-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/use-somebody.json"
+        }
+      ],
+      "artist": "Kings of Leon"
+    },
+    {
+      "id": "viva-la-vida",
+      "title": "Viva la Vida",
+      "tags": [
+        "pop",
+        "2000s"
+      ],
+      "representations": [
+        {
+          "id": "viva-la-vida-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/viva-la-vida.json"
+        }
+      ],
+      "artist": "Coldplay"
+    },
+    {
+      "id": "crazy",
+      "title": "Crazy",
+      "tags": [
+        "soul",
+        "pop",
+        "2000s"
+      ],
+      "representations": [
+        {
+          "id": "crazy-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/crazy.json"
+        }
+      ],
+      "artist": "Gnarls Barkley"
+    },
+    {
+      "id": "hey-ya",
+      "title": "Hey Ya!",
+      "tags": [
+        "pop",
+        "2000s"
+      ],
+      "representations": [
+        {
+          "id": "hey-ya-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/hey-ya.json"
+        }
+      ],
+      "artist": "OutKast"
+    },
+    {
+      "id": "i-gotta-feeling",
+      "title": "I Gotta Feeling",
+      "tags": [
+        "pop",
+        "2000s"
+      ],
+      "representations": [
+        {
+          "id": "i-gotta-feeling-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/i-gotta-feeling.json"
+        }
+      ],
+      "artist": "The Black Eyed Peas"
+    },
+    {
+      "id": "halo",
+      "title": "Halo",
+      "tags": [
+        "pop",
+        "2000s"
+      ],
+      "representations": [
+        {
+          "id": "halo-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/halo.json"
+        }
+      ],
+      "artist": "Beyoncé"
+    },
+    {
+      "id": "poker-face",
+      "title": "Poker Face",
+      "tags": [
+        "pop",
+        "2000s"
+      ],
+      "representations": [
+        {
+          "id": "poker-face-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/poker-face.json"
+        }
+      ],
+      "artist": "Lady Gaga"
+    },
+    {
+      "id": "umbrella",
+      "title": "Umbrella",
+      "tags": [
+        "pop",
+        "2000s"
+      ],
+      "representations": [
+        {
+          "id": "umbrella-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/umbrella.json"
+        }
+      ],
+      "artist": "Rihanna"
+    },
+    {
+      "id": "since-u-been-gone",
+      "title": "Since U Been Gone",
+      "tags": [
+        "pop",
+        "2000s"
+      ],
+      "representations": [
+        {
+          "id": "since-u-been-gone-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/since-u-been-gone.json"
+        }
+      ],
+      "artist": "Kelly Clarkson"
+    },
+    {
+      "id": "complicated",
+      "title": "Complicated",
+      "tags": [
+        "pop",
+        "2000s"
+      ],
+      "representations": [
+        {
+          "id": "complicated-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/complicated.json"
+        }
+      ],
+      "artist": "Avril Lavigne"
+    },
+    {
+      "id": "the-scientist",
+      "title": "The Scientist",
+      "tags": [
+        "pop",
+        "2000s"
+      ],
+      "representations": [
+        {
+          "id": "the-scientist-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/the-scientist.json"
+        }
+      ],
+      "artist": "Coldplay"
+    },
+    {
+      "id": "bad-day",
+      "title": "Bad Day",
+      "tags": [
+        "pop",
+        "2000s"
+      ],
+      "representations": [
+        {
+          "id": "bad-day-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/bad-day.json"
+        }
+      ],
+      "artist": "Daniel Powter"
+    },
+    {
+      "id": "dont-know-why",
+      "title": "Don't Know Why",
+      "tags": [
+        "jazz",
+        "pop",
+        "2000s"
+      ],
+      "representations": [
+        {
+          "id": "dont-know-why-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/dont-know-why.json"
+        }
+      ],
+      "artist": "Norah Jones"
+    },
+    {
+      "id": "apologize",
+      "title": "Apologize",
+      "tags": [
+        "pop",
+        "2000s"
+      ],
+      "representations": [
+        {
+          "id": "apologize-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/apologize.json"
+        }
+      ],
+      "artist": "OneRepublic"
+    },
+    {
+      "id": "how-to-save-a-life",
+      "title": "How to Save a Life",
+      "tags": [
+        "pop",
+        "2000s"
+      ],
+      "representations": [
+        {
+          "id": "how-to-save-a-life-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/how-to-save-a-life.json"
+        }
+      ],
+      "artist": "The Fray"
+    },
+    {
+      "id": "rolling-in-the-deep",
+      "title": "Rolling in the Deep",
+      "tags": [
+        "pop"
+      ],
+      "representations": [
+        {
+          "id": "rolling-in-the-deep-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/rolling-in-the-deep.json"
+        }
+      ],
+      "artist": "Adele"
+    },
+    {
+      "id": "someone-like-you",
+      "title": "Someone Like You",
+      "tags": [
+        "pop"
+      ],
+      "representations": [
+        {
+          "id": "someone-like-you-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/someone-like-you.json"
+        }
+      ],
+      "artist": "Adele"
+    },
+    {
+      "id": "happy",
+      "title": "Happy",
+      "tags": [
+        "pop",
+        "soul"
+      ],
+      "representations": [
+        {
+          "id": "happy-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/happy.json"
+        }
+      ],
+      "artist": "Pharrell Williams"
+    },
+    {
+      "id": "uptown-funk",
+      "title": "Uptown Funk",
+      "tags": [
+        "pop",
+        "funk"
+      ],
+      "representations": [
+        {
+          "id": "uptown-funk-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/uptown-funk.json"
+        }
+      ],
+      "artist": "Mark Ronson ft. Bruno Mars"
+    },
+    {
+      "id": "get-lucky",
+      "title": "Get Lucky",
+      "tags": [
+        "pop",
+        "funk"
+      ],
+      "representations": [
+        {
+          "id": "get-lucky-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/get-lucky.json"
+        }
+      ],
+      "artist": "Daft Punk"
+    },
+    {
+      "id": "shape-of-you",
+      "title": "Shape of You",
+      "tags": [
+        "pop"
+      ],
+      "representations": [
+        {
+          "id": "shape-of-you-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/shape-of-you.json"
+        }
+      ],
+      "artist": "Ed Sheeran"
+    },
+    {
+      "id": "thinking-out-loud",
+      "title": "Thinking Out Loud",
+      "tags": [
+        "pop",
+        "soul"
+      ],
+      "representations": [
+        {
+          "id": "thinking-out-loud-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/thinking-out-loud.json"
+        }
+      ],
+      "artist": "Ed Sheeran"
+    },
+    {
+      "id": "stay-with-me",
+      "title": "Stay with Me",
+      "tags": [
+        "pop",
+        "soul"
+      ],
+      "representations": [
+        {
+          "id": "stay-with-me-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/stay-with-me.json"
+        }
+      ],
+      "artist": "Sam Smith"
+    },
+    {
+      "id": "all-of-me-legend",
+      "title": "All of Me",
+      "tags": [
+        "pop",
+        "soul"
+      ],
+      "representations": [
+        {
+          "id": "all-of-me-legend-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/all-of-me-legend.json"
+        }
+      ],
+      "artist": "John Legend"
+    },
+    {
+      "id": "blinding-lights",
+      "title": "Blinding Lights",
+      "tags": [
+        "pop"
+      ],
+      "representations": [
+        {
+          "id": "blinding-lights-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/blinding-lights.json"
+        }
+      ],
+      "artist": "The Weeknd"
+    },
+    {
+      "id": "levitating",
+      "title": "Levitating",
+      "tags": [
+        "pop"
+      ],
+      "representations": [
+        {
+          "id": "levitating-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/levitating.json"
+        }
+      ],
+      "artist": "Dua Lipa"
+    },
+    {
+      "id": "dont-start-now",
+      "title": "Don't Start Now",
+      "tags": [
+        "pop",
+        "funk"
+      ],
+      "representations": [
+        {
+          "id": "dont-start-now-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/dont-start-now.json"
+        }
+      ],
+      "artist": "Dua Lipa"
+    },
+    {
+      "id": "watermelon-sugar",
+      "title": "Watermelon Sugar",
+      "tags": [
+        "pop"
+      ],
+      "representations": [
+        {
+          "id": "watermelon-sugar-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/watermelon-sugar.json"
+        }
+      ],
+      "artist": "Harry Styles"
+    },
+    {
+      "id": "as-it-was",
+      "title": "As It Was",
+      "tags": [
+        "pop"
+      ],
+      "representations": [
+        {
+          "id": "as-it-was-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/as-it-was.json"
+        }
+      ],
+      "artist": "Harry Styles"
+    },
+    {
+      "id": "bad-guy",
+      "title": "Bad Guy",
+      "tags": [
+        "pop"
+      ],
+      "representations": [
+        {
+          "id": "bad-guy-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/bad-guy.json"
+        }
+      ],
+      "artist": "Billie Eilish"
+    },
+    {
+      "id": "drivers-license",
+      "title": "drivers license",
+      "tags": [
+        "pop"
+      ],
+      "representations": [
+        {
+          "id": "drivers-license-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/drivers-license.json"
+        }
+      ],
+      "artist": "Olivia Rodrigo"
+    },
+    {
+      "id": "good-4-u",
+      "title": "good 4 u",
+      "tags": [
+        "pop",
+        "rock"
+      ],
+      "representations": [
+        {
+          "id": "good-4-u-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/good-4-u.json"
+        }
+      ],
+      "artist": "Olivia Rodrigo"
+    },
+    {
+      "id": "flowers",
+      "title": "Flowers",
+      "tags": [
+        "pop"
+      ],
+      "representations": [
+        {
+          "id": "flowers-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/flowers.json"
+        }
+      ],
+      "artist": "Miley Cyrus"
+    },
+    {
+      "id": "anti-hero",
+      "title": "Anti-Hero",
+      "tags": [
+        "pop"
+      ],
+      "representations": [
+        {
+          "id": "anti-hero-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/anti-hero.json"
+        }
+      ],
+      "artist": "Taylor Swift"
+    },
+    {
+      "id": "cruel-summer",
+      "title": "Cruel Summer",
+      "tags": [
+        "pop"
+      ],
+      "representations": [
+        {
+          "id": "cruel-summer-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/cruel-summer.json"
+        }
+      ],
+      "artist": "Taylor Swift"
     }
   ]
 }

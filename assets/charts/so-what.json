@@ -1,0 +1,96 @@
+{
+  "key": "Dm",
+  "time": "4/4",
+  "sections": [
+    {
+      "label": "A",
+      "bars": [
+        {
+          "chords": [
+            "D-7"
+          ]
+        },
+        {
+          "chords": [
+            "D-7"
+          ]
+        },
+        {
+          "chords": [
+            "D-7"
+          ]
+        },
+        {
+          "chords": [
+            "D-7"
+          ]
+        },
+        {
+          "chords": [
+            "D-7"
+          ]
+        },
+        {
+          "chords": [
+            "D-7"
+          ]
+        },
+        {
+          "chords": [
+            "D-7"
+          ]
+        },
+        {
+          "chords": [
+            "D-7"
+          ]
+        }
+      ]
+    },
+    {
+      "label": "B",
+      "bars": [
+        {
+          "chords": [
+            "Eb-7"
+          ]
+        },
+        {
+          "chords": [
+            "Eb-7"
+          ]
+        },
+        {
+          "chords": [
+            "Eb-7"
+          ]
+        },
+        {
+          "chords": [
+            "Eb-7"
+          ]
+        },
+        {
+          "chords": [
+            "D-7"
+          ]
+        },
+        {
+          "chords": [
+            "D-7"
+          ]
+        },
+        {
+          "chords": [
+            "D-7"
+          ]
+        },
+        {
+          "chords": [
+            "D-7"
+          ]
+        }
+      ]
+    }
+  ]
+}
