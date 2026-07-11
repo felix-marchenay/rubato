@@ -2,9 +2,6 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
-import '../codec/chordpro_codec.dart';
-import '../domain/lyric_sheet.dart';
-
 /// Source de paroles en ligne, adossée à l'API publique et gratuite de
 /// **LRCLIB** (https://lrclib.net). Récupère les paroles brutes à l'exécution ;
 /// rien n'est stocké dans le dépôt. Le texte des paroles reste la propriété de
@@ -12,11 +9,9 @@ import '../domain/lyric_sheet.dart';
 class LrclibService {
   const LrclibService();
 
-  static const _codec = ChordProCodec();
-
-  /// Cherche les paroles brutes d'un morceau. Retourne `null` si LRCLIB ne
-  /// trouve rien. Lève une exception en cas d'erreur réseau/HTTP.
-  Future<LyricSheet?> fetchLyrics({
+  /// Cherche les paroles brutes (texte) d'un morceau. Retourne `null` si LRCLIB
+  /// ne trouve rien. Lève une exception en cas d'erreur réseau/HTTP.
+  Future<String?> fetchPlainLyrics({
     required String track,
     String? artist,
   }) async {
@@ -41,7 +36,7 @@ class LrclibService {
       if (item is Map<String, dynamic>) {
         final plain = item['plainLyrics'];
         if (plain is String && plain.trim().isNotEmpty) {
-          return _codec.plainText(plain);
+          return plain;
         }
       }
     }

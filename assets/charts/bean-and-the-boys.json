@@ -1,0 +1,287 @@
+{
+  "key": "Ab",
+  "time": "4/4",
+  "sections": [
+    {
+      "label": "A",
+      "bars": [
+        {
+          "chords": [
+            "Ab6"
+          ]
+        },
+        {
+          "chords": [
+            "Ab6"
+          ]
+        },
+        {
+          "chords": [
+            "Gh7"
+          ]
+        },
+        {
+          "chords": [
+            "C7b9"
+          ]
+        },
+        {
+          "chords": [
+            "F-7"
+          ]
+        },
+        {
+          "chords": [
+            "F-7"
+          ]
+        },
+        {
+          "chords": [
+            "Bb7"
+          ]
+        },
+        {
+          "chords": [
+            "Bh7"
+          ]
+        },
+        {
+          "chords": [
+            "Ab6/C"
+          ]
+        },
+        {
+          "chords": [
+            "F-7"
+          ]
+        },
+        {
+          "chords": [
+            "Bb7"
+          ]
+        },
+        {
+          "chords": [
+            "Eb7"
+          ]
+        },
+        {
+          "chords": [
+            "Ab6",
+            "Ab6/C"
+          ]
+        },
+        {
+          "chords": [
+            "Db6",
+            "Do7"
+          ]
+        },
+        {
+          "chords": [
+            "Ab6/Eb",
+            "F-7"
+          ]
+        },
+        {
+          "chords": [
+            "Bb-7",
+            "Eb7"
+          ]
+        },
+        {
+          "chords": [
+            "Db6",
+            "Do7"
+          ]
+        },
+        {
+          "chords": [
+            "Ab6/Eb"
+          ]
+        },
+        {
+          "chords": [
+            "Gh7",
+            "C7b9"
+          ]
+        }
+      ]
+    },
+    {
+      "label": "B",
+      "bars": [
+        {
+          "chords": [
+            "F-7"
+          ]
+        },
+        {
+          "chords": [
+            "F-7"
+          ]
+        },
+        {
+          "chords": [
+            "Gh7",
+            "C7b9"
+          ]
+        },
+        {
+          "chords": [
+            "F-7"
+          ]
+        },
+        {
+          "chords": [
+            "Gh7"
+          ]
+        },
+        {
+          "chords": [
+            "C7b9"
+          ]
+        },
+        {
+          "chords": [
+            "Db7"
+          ]
+        },
+        {
+          "chords": [
+            "C7b9"
+          ]
+        },
+        {
+          "chords": [
+            "F-7"
+          ]
+        },
+        {
+          "chords": [
+            "F-7"
+          ]
+        },
+        {
+          "chords": [
+            "Gh7",
+            "C7b9"
+          ]
+        },
+        {
+          "chords": [
+            "F-7"
+          ]
+        },
+        {
+          "chords": [
+            "Bb7"
+          ]
+        },
+        {
+          "chords": [
+            "Bb7"
+          ]
+        },
+        {
+          "chords": [
+            "Bb-7"
+          ]
+        },
+        {
+          "chords": [
+            "Eb7"
+          ]
+        }
+      ]
+    },
+    {
+      "label": "C",
+      "bars": [
+        {
+          "chords": [
+            "Ab6"
+          ]
+        },
+        {
+          "chords": [
+            "Ab6"
+          ]
+        },
+        {
+          "chords": [
+            "Gh7"
+          ]
+        },
+        {
+          "chords": [
+            "C7b9"
+          ]
+        },
+        {
+          "chords": [
+            "F-7"
+          ]
+        },
+        {
+          "chords": [
+            "F-7"
+          ]
+        },
+        {
+          "chords": [
+            "F#o7"
+          ]
+        },
+        {
+          "chords": [
+            "F#o7"
+          ]
+        },
+        {
+          "chords": [
+            "Db6"
+          ]
+        },
+        {
+          "chords": [
+            "Db6"
+          ]
+        },
+        {
+          "chords": [
+            "Db6"
+          ]
+        },
+        {
+          "chords": [
+            "Db-6",
+            "Eb7"
+          ]
+        },
+        {
+          "chords": [
+            "Ab6"
+          ]
+        },
+        {
+          "chords": [
+            "Bb-7",
+            "Eb7"
+          ]
+        },
+        {
+          "chords": [
+            "Ab6"
+          ]
+        },
+        {
+          "chords": [
+            "Bb-7",
+            "Eb7"
+          ]
+        }
+      ]
+    }
+  ]
+}

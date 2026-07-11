@@ -1,0 +1,146 @@
+{
+  "key": "Eb",
+  "time": "4/4",
+  "sections": [
+    {
+      "label": "A",
+      "bars": [
+        {
+          "chords": [
+            "Gb^7"
+          ]
+        },
+        {
+          "chords": [
+            "D/F#"
+          ]
+        },
+        {
+          "chords": [
+            "Bb^7/F"
+          ]
+        },
+        {
+          "chords": [
+            "G7sus",
+            "G7"
+          ]
+        },
+        {
+          "chords": [
+            "C^7",
+            "Ebsus"
+          ]
+        },
+        {
+          "chords": [
+            "Ab^7"
+          ]
+        },
+        {
+          "chords": [
+            "Db13sus"
+          ]
+        },
+        {
+          "chords": [
+            "Db13b9"
+          ]
+        },
+        {
+          "chords": [
+            "Gb^7"
+          ]
+        },
+        {
+          "chords": [
+            "F13sus"
+          ]
+        },
+        {
+          "chords": [
+            "D-9"
+          ]
+        },
+        {
+          "chords": [
+            "Bb9sus",
+            "G7#9"
+          ]
+        },
+        {
+          "chords": [
+            "C-7",
+            "Bb-7",
+            "Eb7"
+          ]
+        },
+        {
+          "chords": [
+            "Ab^7"
+          ]
+        },
+        {
+          "chords": [
+            "Db9sus"
+          ]
+        },
+        {
+          "chords": [
+            "Eb9sus"
+          ]
+        }
+      ]
+    },
+    {
+      "label": "B",
+      "bars": [
+        {
+          "chords": [
+            "Eb^7"
+          ]
+        },
+        {
+          "chords": [
+            "C-9"
+          ]
+        },
+        {
+          "chords": [
+            "Db9sus"
+          ]
+        },
+        {
+          "chords": [
+            "Eb9sus"
+          ]
+        },
+        {
+          "chords": [
+            "Eb^7"
+          ]
+        },
+        {
+          "chords": [
+            "C-9"
+          ]
+        },
+        {
+          "chords": [
+            "Db9sus"
+          ]
+        },
+        {
+          "chords": [
+            "Db13b9"
+          ]
+        },
+        {
+          "chords": [
+            "Eb^7"
+          ]
+        }
+      ]
+    }
+  ]
+}

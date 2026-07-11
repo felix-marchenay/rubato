@@ -1,0 +1,62 @@
+{
+  "key": "Bbm",
+  "time": "4/4",
+  "sections": [
+    {
+      "label": null,
+      "bars": [
+        {
+          "chords": [
+            "G7sus"
+          ]
+        },
+        {
+          "chords": [
+            "Eb7sus"
+          ]
+        },
+        {
+          "chords": [
+            "G7sus"
+          ]
+        },
+        {
+          "chords": [
+            "Eb7sus"
+          ]
+        },
+        {
+          "chords": [
+            "G7sus",
+            "E7sus"
+          ]
+        },
+        {
+          "chords": [
+            "Eb7sus"
+          ]
+        },
+        {
+          "chords": [
+            "D7#9"
+          ]
+        },
+        {
+          "chords": [
+            "Eb7sus"
+          ]
+        },
+        {
+          "chords": [
+            "D7#9"
+          ]
+        },
+        {
+          "chords": [
+            "Eb7sus"
+          ]
+        }
+      ]
+    }
+  ]
+}

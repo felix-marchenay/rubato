@@ -1,0 +1,238 @@
+{
+  "key": "Gm",
+  "time": "4/4",
+  "sections": [
+    {
+      "label": "Intro",
+      "bars": [
+        {
+          "chords": [
+            "D^7#11/Ab"
+          ]
+        },
+        {
+          "chords": [
+            "D^7#11/Ab"
+          ]
+        },
+        {
+          "chords": [
+            "D^7/A"
+          ]
+        },
+        {
+          "chords": [
+            "D^7/A"
+          ]
+        },
+        {
+          "chords": [
+            "D^7#5/Ab"
+          ]
+        },
+        {
+          "chords": [
+            "D^7#5/Ab"
+          ]
+        },
+        {
+          "chords": [
+            "D^7/A"
+          ]
+        },
+        {
+          "chords": [
+            "D^7/A"
+          ]
+        }
+      ]
+    },
+    {
+      "label": "A",
+      "bars": [
+        {
+          "chords": [
+            "G-7"
+          ]
+        },
+        {
+          "chords": [
+            "G-7"
+          ]
+        },
+        {
+          "chords": [
+            "C13b9"
+          ]
+        },
+        {
+          "chords": [
+            "C13b9"
+          ]
+        },
+        {
+          "chords": [
+            "G-7"
+          ]
+        },
+        {
+          "chords": [
+            "G-7"
+          ]
+        },
+        {
+          "chords": [
+            "C13b9"
+          ]
+        },
+        {
+          "chords": [
+            "C13b9"
+          ]
+        },
+        {
+          "chords": [
+            "B-11"
+          ]
+        },
+        {
+          "chords": [
+            "B-11"
+          ]
+        },
+        {
+          "chords": [
+            "E7sus"
+          ]
+        },
+        {
+          "chords": [
+            "E13b9"
+          ]
+        },
+        {
+          "chords": [
+            "A-7"
+          ]
+        },
+        {
+          "chords": [
+            "A-7"
+          ]
+        },
+        {
+          "chords": [
+            "D7sus"
+          ]
+        },
+        {
+          "chords": [
+            "C13#11"
+          ]
+        },
+        {
+          "chords": [
+            "G^7#5/C#"
+          ]
+        },
+        {
+          "chords": [
+            "G-^7/C"
+          ]
+        },
+        {
+          "chords": [
+            "F7sus"
+          ]
+        },
+        {
+          "chords": [
+            "F7sus"
+          ]
+        },
+        {
+          "chords": [
+            "B-9"
+          ]
+        },
+        {
+          "chords": [
+            "C#-11",
+            "D-11"
+          ]
+        },
+        {
+          "chords": [
+            "Eb-11"
+          ]
+        },
+        {
+          "chords": [
+            "Ab7",
+            "Ab7b9"
+          ]
+        },
+        {
+          "chords": [
+            "A-7"
+          ]
+        },
+        {
+          "chords": [
+            "A-7"
+          ]
+        },
+        {
+          "chords": [
+            "D7"
+          ]
+        },
+        {
+          "chords": [
+            "D7"
+          ]
+        },
+        {
+          "chords": [
+            "A-7"
+          ]
+        },
+        {
+          "chords": [
+            "A-7"
+          ]
+        },
+        {
+          "chords": [
+            "D7"
+          ]
+        },
+        {
+          "chords": [
+            "Ab-7"
+          ]
+        },
+        {
+          "chords": [
+            "D^7#11/Ab"
+          ]
+        },
+        {
+          "chords": [
+            "D^7#11/Ab"
+          ]
+        },
+        {
+          "chords": [
+            "D^7/A"
+          ]
+        },
+        {
+          "chords": [
+            "D^7/A"
+          ]
+        }
+      ]
+    }
+  ]
+}

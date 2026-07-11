@@ -32,6 +32,10 @@ class CatalogRepository {
     return _chordPro.decode(raw);
   }
 
+  /// Source de la partition mélodie : le texte en notation ABC (rendu par abcjs).
+  Future<String> loadScoreSource(Representation rep) =>
+      rootBundle.loadString(rep.assetPath);
+
   Song _songFromMap(dynamic e) {
     final m = e as Map<String, dynamic>;
     return Song(

@@ -1,0 +1,159 @@
+{
+  "key": "Ab",
+  "time": "4/4",
+  "sections": [
+    {
+      "label": "Intro",
+      "bars": [
+        {
+          "chords": [
+            "Bb-7",
+            "C-7"
+          ]
+        },
+        {
+          "chords": [
+            "Db^7",
+            "F7b9"
+          ]
+        },
+        {
+          "chords": [
+            "Bb-7",
+            "C-7"
+          ]
+        },
+        {
+          "chords": [
+            "Db^7",
+            "F7b9"
+          ]
+        },
+        {
+          "chords": [
+            "Bb-7",
+            "C-7"
+          ]
+        },
+        {
+          "chords": [
+            "Db^7",
+            "Eb7b9"
+          ]
+        },
+        {
+          "chords": [
+            "Ab^7"
+          ]
+        },
+        {
+          "chords": [
+            "F7b9"
+          ]
+        }
+      ]
+    },
+    {
+      "label": "A",
+      "bars": [
+        {
+          "chords": [
+            "Bb-7",
+            "C-7"
+          ]
+        },
+        {
+          "chords": [
+            "Db^7",
+            "F7b9"
+          ]
+        },
+        {
+          "chords": [
+            "Bb-7",
+            "C-7"
+          ]
+        },
+        {
+          "chords": [
+            "Db^7",
+            "F7b9"
+          ]
+        },
+        {
+          "chords": [
+            "Bb-7",
+            "C-7"
+          ]
+        },
+        {
+          "chords": [
+            "Db^7",
+            "Eb7b9"
+          ]
+        },
+        {
+          "chords": [
+            "Ab^7"
+          ]
+        },
+        {
+          "chords": [
+            "F7b9"
+          ]
+        }
+      ]
+    },
+    {
+      "label": "B",
+      "bars": [
+        {
+          "chords": [
+            "Bb-7",
+            "C-7"
+          ]
+        },
+        {
+          "chords": [
+            "Db^7",
+            "F7b9"
+          ]
+        },
+        {
+          "chords": [
+            "Bb-7",
+            "C-7"
+          ]
+        },
+        {
+          "chords": [
+            "Db^7",
+            "F7b9"
+          ]
+        },
+        {
+          "chords": [
+            "Bb-7",
+            "C-7"
+          ]
+        },
+        {
+          "chords": [
+            "Db^7",
+            "Eb7b9"
+          ]
+        },
+        {
+          "chords": [
+            "Ab^7"
+          ]
+        },
+        {
+          "chords": [
+            "F7b9"
+          ]
+        }
+      ]
+    }
+  ]
+}

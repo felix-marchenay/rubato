@@ -1,0 +1,231 @@
+{
+  "key": "A",
+  "time": "3/4",
+  "sections": [
+    {
+      "label": "A",
+      "bars": [
+        {
+          "chords": [
+            "B-7"
+          ]
+        },
+        {
+          "chords": [
+            "F#-9"
+          ]
+        },
+        {
+          "chords": [
+            "B-7"
+          ]
+        },
+        {
+          "chords": [
+            "F#-9"
+          ]
+        },
+        {
+          "chords": [
+            "B-7"
+          ]
+        },
+        {
+          "chords": [
+            "F#-9"
+          ]
+        },
+        {
+          "chords": [
+            "F^7"
+          ]
+        },
+        {
+          "chords": [
+            "G"
+          ]
+        },
+        {
+          "chords": [
+            "F^7"
+          ]
+        },
+        {
+          "chords": [
+            "F^7"
+          ]
+        }
+      ]
+    },
+    {
+      "label": "B",
+      "bars": [
+        {
+          "chords": [
+            "D-7"
+          ]
+        },
+        {
+          "chords": [
+            "E-7"
+          ]
+        },
+        {
+          "chords": [
+            "Asus"
+          ]
+        },
+        {
+          "chords": [
+            "A7"
+          ]
+        },
+        {
+          "chords": [
+            "D-7"
+          ]
+        },
+        {
+          "chords": [
+            "E-7"
+          ]
+        },
+        {
+          "chords": [
+            "A-11"
+          ]
+        },
+        {
+          "chords": [
+            "A-7"
+          ]
+        },
+        {
+          "chords": [
+            "D-7"
+          ]
+        },
+        {
+          "chords": [
+            "E-7"
+          ]
+        },
+        {
+          "chords": [
+            "A-7"
+          ]
+        },
+        {
+          "chords": [
+            "F#h7"
+          ]
+        },
+        {
+          "chords": [
+            "D-7"
+          ]
+        },
+        {
+          "chords": [
+            "E-7"
+          ]
+        },
+        {
+          "chords": [
+            "Asus"
+          ]
+        },
+        {
+          "chords": [
+            "A"
+          ]
+        },
+        {
+          "chords": [
+            "F#-7"
+          ]
+        },
+        {
+          "chords": [
+            "F#-7"
+          ]
+        },
+        {
+          "chords": [
+            "F#-7"
+          ]
+        },
+        {
+          "chords": [
+            "F#-7"
+          ]
+        },
+        {
+          "chords": [
+            "F^7"
+          ]
+        },
+        {
+          "chords": [
+            "F^7"
+          ]
+        },
+        {
+          "chords": [
+            "D-7"
+          ]
+        },
+        {
+          "chords": [
+            "D-7"
+          ]
+        },
+        {
+          "chords": [
+            "G^7/B"
+          ]
+        },
+        {
+          "chords": [
+            "G^7/B"
+          ]
+        },
+        {
+          "chords": [
+            "G^7/B"
+          ]
+        },
+        {
+          "chords": [
+            "G^7/B"
+          ]
+        },
+        {
+          "chords": [
+            "Bb^9"
+          ]
+        },
+        {
+          "chords": [
+            "Bb^9"
+          ]
+        },
+        {
+          "chords": [
+            "Bb^9"
+          ]
+        },
+        {
+          "chords": [
+            "Bb^9"
+          ]
+        },
+        {
+          "chords": [
+            "Asus"
+          ]
+        }
+      ]
+    }
+  ]
+}

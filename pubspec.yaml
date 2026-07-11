@@ -42,6 +42,14 @@ dependencies:
   # Requêtes HTTP (récupération des paroles via LRCLIB).
   http: ^1.2.2
 
+  # Chemin du stockage local (paroles récupérées conservées en .pro).
+  path_provider: ^2.1.4
+
+  # Rendu de la partition mélodie : notation ABC rendue par abcjs dans une
+  # WebView (abcjs est embarqué dans assets/abcjs, aucun accès réseau requis).
+  webview_flutter: ^4.7.0
+  webview_flutter_web: ^0.2.3
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -52,6 +60,33 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+
+  # Génération de l'icône launcher et du splash à partir de assets/branding/.
+  # Régénérer avec :
+  #   dart run flutter_launcher_icons
+  #   dart run flutter_native_splash:create
+  flutter_launcher_icons: ^0.14.1
+  flutter_native_splash: ^2.4.1
+
+# Icône launcher (monogramme R laiton, direction « Encre & Papier »).
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/branding/icon.png"
+  adaptive_icon_background: "#14110C"
+  adaptive_icon_foreground: "assets/branding/icon_foreground.png"
+
+# Splash natif (logo centré sur fond papier / encre selon le thème système).
+flutter_native_splash:
+  color: "#F4EEE2"
+  image: assets/branding/splash.png
+  color_dark: "#14110C"
+  image_dark: assets/branding/splash_dark.png
+  android_12:
+    color: "#F4EEE2"
+    image: assets/branding/splash.png
+    color_dark: "#14110C"
+    image_dark: assets/branding/splash_dark.png
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -68,6 +103,8 @@ flutter:
     - assets/catalog.json
     - assets/charts/
     - assets/lyrics/
+    - assets/scores/
+    - assets/abcjs/abcjs-basic-min.js
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

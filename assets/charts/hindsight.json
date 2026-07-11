@@ -1,0 +1,182 @@
+{
+  "key": "C",
+  "time": "4/4",
+  "sections": [
+    {
+      "label": "Intro",
+      "bars": [
+        {
+          "chords": [
+            "B7alt"
+          ]
+        },
+        {
+          "chords": [
+            "C7alt",
+            "B7",
+            "A7"
+          ]
+        },
+        {
+          "chords": [
+            "B7alt"
+          ]
+        },
+        {
+          "chords": [
+            "B7alt"
+          ]
+        }
+      ]
+    },
+    {
+      "label": "A",
+      "bars": [
+        {
+          "chords": [
+            "C^7"
+          ]
+        },
+        {
+          "chords": [
+            "B13b9"
+          ]
+        },
+        {
+          "chords": [
+            "Bb^7"
+          ]
+        },
+        {
+          "chords": [
+            "A7b9"
+          ]
+        },
+        {
+          "chords": [
+            "Ab^7"
+          ]
+        },
+        {
+          "chords": [
+            "G13b9"
+          ]
+        },
+        {
+          "chords": [
+            "Gb^7"
+          ]
+        },
+        {
+          "chords": [
+            "F7b9"
+          ]
+        }
+      ]
+    },
+    {
+      "label": "B",
+      "bars": [
+        {
+          "chords": [
+            "E^7#11"
+          ]
+        },
+        {
+          "chords": [
+            "E^7#11"
+          ]
+        },
+        {
+          "chords": [
+            "E^7#11"
+          ]
+        },
+        {
+          "chords": [
+            "E^7#11",
+            "Eb7b9"
+          ]
+        },
+        {
+          "chords": [
+            "D^7#11"
+          ]
+        },
+        {
+          "chords": [
+            "D^7#11"
+          ]
+        },
+        {
+          "chords": [
+            "D^7#11"
+          ]
+        },
+        {
+          "chords": [
+            "D^7#11"
+          ]
+        },
+        {
+          "chords": [
+            "Ab-7",
+            "Db7"
+          ]
+        },
+        {
+          "chords": [
+            "G13"
+          ]
+        },
+        {
+          "chords": [
+            "C-^7"
+          ]
+        },
+        {
+          "chords": [
+            "C-^7"
+          ]
+        },
+        {
+          "chords": [
+            "C-^7"
+          ]
+        },
+        {
+          "chords": [
+            "C-^7"
+          ]
+        }
+      ]
+    },
+    {
+      "label": "C",
+      "bars": [
+        {
+          "chords": [
+            "B7alt"
+          ]
+        },
+        {
+          "chords": [
+            "C7alt",
+            "B7",
+            "A7"
+          ]
+        },
+        {
+          "chords": [
+            "B7alt"
+          ]
+        },
+        {
+          "chords": [
+            "B7alt"
+          ]
+        }
+      ]
+    }
+  ]
+}

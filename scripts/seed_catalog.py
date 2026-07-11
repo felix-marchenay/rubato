@@ -24,16 +24,17 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 CHARTS_DIR = os.path.join(ROOT, "assets", "charts")
 LYRICS_DIR = os.path.join(ROOT, "assets", "lyrics")
+SCORES_DIR = os.path.join(ROOT, "assets", "scores")
 CATALOG = os.path.join(ROOT, "assets", "catalog.json")
 
 
-def S(id, title, artist, tags, key, time, sections, lyrics=None):
+def S(id, title, artist, tags, key, time, sections, lyrics=None, melody=None):
     # `lyrics` : texte ChordPro optionnel (paroles + accords entre crochets).
-    # Droits d'auteur : ne mettre ici QUE des paroles libres de droits ou
-    # écrites par soi-même. Le catalogue fourni n'embarque pas de paroles
-    # protégées.
-    return dict(id=id, title=title, artist=artist, tags=tags,
-                key=key, time=time, sections=sections, lyrics=lyrics)
+    # `melody` : notation ABC optionnelle (partition mélodie, rendue par abcjs).
+    # Droits d'auteur : ne mettre ici QUE des paroles/mélodies libres de droits
+    # ou écrites par soi-même. Le catalogue fourni n'embarque rien de protégé.
+    return dict(id=id, title=title, artist=artist, tags=tags, key=key,
+                time=time, sections=sections, lyrics=lyrics, melody=melody)
 
 
 SONGS = [
@@ -61,6 +62,15 @@ SONGS = [
 [C7]Train down at the station, I can [F7]hear that whistle [C7]cry
 [F7]Train down at the station, I can [C7]hear that whistle cry
 [G7]Carry me on over where the [F7]river meets the [C7]sky [G7]
+""", melody="""X:1
+T:Twelve-Bar Blues in C
+M:4/4
+L:1/8
+Q:1/4=120
+K:C
+"C7" G2 E2 G2 A2 | "F7" c2 A2 G2 E2 | "C7" E2 G2 c2 G2 | "C7" G4 z4 |
+"F7" A2 c2 A2 G2 | "F7" F2 A2 c2 A2 | "C7" G2 E2 G2 E2 | "C7" C4 z4 |
+"G7" d2 B2 d2 f2 | "F7" c2 A2 c2 A2 | "C7" G2 E2 C2 E2 | "G7" G4 z4 |]
 """),
     S("someday-my-prince", "Someday My Prince Will Come", "Frank Churchill", ["jazz", "waltz"], "Bb", "3/4", [
         ("A", "Bb^7 | G-7 | C-7 | F7 | Bb^7 | G-7 | C-7 F7 | Bb^7"),
@@ -386,9 +396,11 @@ def bars_from(spec):
 def main():
     os.makedirs(CHARTS_DIR, exist_ok=True)
     os.makedirs(LYRICS_DIR, exist_ok=True)
+    os.makedirs(SCORES_DIR, exist_ok=True)
     ids = set()
     catalog_songs = []
     lyrics_count = 0
+    scores_count = 0
 
     for song in SONGS:
         sid = song["id"]
@@ -429,6 +441,19 @@ def main():
             )
             lyrics_count += 1
 
+        # Mélodie (partition ABC) : même logique — champ `melody=` en dur ou
+        # fichier assets/scores/<id>.abc déposé à la main.
+        score_asset = f"assets/scores/{sid}.abc"
+        score_path = os.path.join(ROOT, score_asset)
+        if song.get("melody"):
+            with open(score_path, "w", encoding="utf-8") as f:
+                f.write(song["melody"])
+        if os.path.exists(score_path):
+            representations.append(
+                {"id": f"{sid}-score", "type": "score", "asset": score_asset}
+            )
+            scores_count += 1
+
         entry = {
             "id": sid,
             "title": song["title"],
@@ -445,7 +470,8 @@ def main():
         f.write("\n")
 
     print(f"{len(catalog_songs)} morceaux générés "
-          f"(dont {lyrics_count} avec paroles) → assets/ + catalog.json")
+          f"(dont {lyrics_count} avec paroles, {scores_count} avec mélodie) "
+          f"→ assets/ + catalog.json")
 
 
 if __name__ == "__main__":

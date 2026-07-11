@@ -1,0 +1,186 @@
+{
+  "key": "Cm",
+  "time": "4/4",
+  "sections": [
+    {
+      "label": "Intro",
+      "bars": [
+        {
+          "chords": [
+            "C-"
+          ]
+        },
+        {
+          "chords": [
+            "C-"
+          ]
+        },
+        {
+          "chords": [
+            "C-"
+          ]
+        },
+        {
+          "chords": [
+            "C-"
+          ]
+        }
+      ]
+    },
+    {
+      "label": "A",
+      "bars": [
+        {
+          "chords": [
+            "C-"
+          ]
+        },
+        {
+          "chords": [
+            "D/F#"
+          ]
+        },
+        {
+          "chords": [
+            "Ab^7"
+          ]
+        },
+        {
+          "chords": [
+            "Ab^7"
+          ]
+        },
+        {
+          "chords": [
+            "Ab-6"
+          ]
+        },
+        {
+          "chords": [
+            "Ab-6"
+          ]
+        },
+        {
+          "chords": [
+            "C-"
+          ]
+        },
+        {
+          "chords": [
+            "C-"
+          ]
+        }
+      ]
+    },
+    {
+      "label": "B",
+      "bars": [
+        {
+          "chords": [
+            "F-"
+          ]
+        },
+        {
+          "chords": [
+            "G7"
+          ]
+        },
+        {
+          "chords": [
+            "C-"
+          ]
+        },
+        {
+          "chords": [
+            "C-"
+          ]
+        },
+        {
+          "chords": [
+            "F-"
+          ]
+        },
+        {
+          "chords": [
+            "G7"
+          ]
+        },
+        {
+          "chords": [
+            "C-"
+          ]
+        },
+        {
+          "chords": [
+            "G7"
+          ]
+        }
+      ]
+    },
+    {
+      "label": "C",
+      "bars": [
+        {
+          "chords": [
+            "F-"
+          ]
+        },
+        {
+          "chords": [
+            "D/F#"
+          ]
+        },
+        {
+          "chords": [
+            "Ab^7"
+          ]
+        },
+        {
+          "chords": [
+            "Ab^7"
+          ]
+        },
+        {
+          "chords": [
+            "Ab-6"
+          ]
+        },
+        {
+          "chords": [
+            "Ab-6"
+          ]
+        },
+        {
+          "chords": [
+            "C-"
+          ]
+        },
+        {
+          "chords": [
+            "C-"
+          ]
+        },
+        {
+          "chords": [
+            "Ab-6"
+          ]
+        },
+        {
+          "chords": [
+            "Ab-6"
+          ]
+        },
+        {
+          "chords": [
+            "C-"
+          ]
+        },
+        {
+          "chords": [
+            "C-"
+          ]
+        }
+      ]
+    }
+  ]
+}

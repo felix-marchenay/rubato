@@ -1,0 +1,239 @@
+{
+  "key": "G",
+  "time": "4/4",
+  "sections": [
+    {
+      "label": "Intro",
+      "bars": [
+        {
+          "chords": [
+            "G^7"
+          ]
+        },
+        {
+          "chords": [
+            "G^7"
+          ]
+        },
+        {
+          "chords": [
+            "C7#11"
+          ]
+        },
+        {
+          "chords": [
+            "C7#11"
+          ]
+        },
+        {
+          "chords": [
+            "F7#11"
+          ]
+        },
+        {
+          "chords": [
+            "E7#11"
+          ]
+        },
+        {
+          "chords": [
+            "Eb7#9"
+          ]
+        },
+        {
+          "chords": [
+            "D7#11"
+          ]
+        }
+      ]
+    },
+    {
+      "label": "A",
+      "bars": [
+        {
+          "chords": [
+            "G^7"
+          ]
+        },
+        {
+          "chords": [
+            "G^7"
+          ]
+        },
+        {
+          "chords": [
+            "Bb-7"
+          ]
+        },
+        {
+          "chords": [
+            "Eb7"
+          ]
+        },
+        {
+          "chords": [
+            "G^7"
+          ]
+        },
+        {
+          "chords": [
+            "G^7"
+          ]
+        },
+        {
+          "chords": [
+            "B-7"
+          ]
+        },
+        {
+          "chords": [
+            "E7b9"
+          ]
+        }
+      ]
+    },
+    {
+      "label": "B",
+      "bars": [
+        {
+          "chords": [
+            "A-7"
+          ]
+        },
+        {
+          "chords": [
+            "E7b9"
+          ]
+        },
+        {
+          "chords": [
+            "A-7"
+          ]
+        },
+        {
+          "chords": [
+            "A-7"
+          ]
+        },
+        {
+          "chords": [
+            "Bb-7",
+            "Eb7"
+          ]
+        },
+        {
+          "chords": [
+            "Bb-7",
+            "Eb7"
+          ]
+        },
+        {
+          "chords": [
+            "B-7",
+            "Bb7"
+          ]
+        },
+        {
+          "chords": [
+            "Eb^7",
+            "Ab7"
+          ]
+        }
+      ]
+    },
+    {
+      "label": "A",
+      "bars": [
+        {
+          "chords": [
+            "G^7"
+          ]
+        },
+        {
+          "chords": [
+            "G^7"
+          ]
+        },
+        {
+          "chords": [
+            "Bb-7"
+          ]
+        },
+        {
+          "chords": [
+            "Eb7"
+          ]
+        },
+        {
+          "chords": [
+            "G^7"
+          ]
+        },
+        {
+          "chords": [
+            "G^7"
+          ]
+        },
+        {
+          "chords": [
+            "B-7"
+          ]
+        },
+        {
+          "chords": [
+            "E7b9"
+          ]
+        }
+      ]
+    },
+    {
+      "label": "C",
+      "bars": [
+        {
+          "chords": [
+            "A-7"
+          ]
+        },
+        {
+          "chords": [
+            "E7b9"
+          ]
+        },
+        {
+          "chords": [
+            "A-7"
+          ]
+        },
+        {
+          "chords": [
+            "C-7",
+            "F7"
+          ]
+        },
+        {
+          "chords": [
+            "B-7",
+            "Bb7"
+          ]
+        },
+        {
+          "chords": [
+            "Eb^7",
+            "Ab7"
+          ]
+        },
+        {
+          "chords": [
+            "G^7"
+          ]
+        },
+        {
+          "chords": [
+            "A-7",
+            "D7"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 
 import '../data/catalog_repository.dart';
 import '../domain/chord_chart.dart';
-import '../domain/lyric_sheet.dart';
 import '../domain/song.dart';
 import 'theme.dart';
 import 'widgets/chord_grid_view.dart';
-import 'widgets/lyric_sheet_view.dart';
+import 'widgets/lyrics_pane.dart';
+import 'widgets/score_view.dart';
 
-enum _ViewMode { grid, lyrics }
+enum _ViewMode { grid, lyrics, melody }
 
-/// Écran de lecture : bascule entre la grille d'accords et la feuille
-/// paroles + accords (ChordPro) selon les représentations disponibles.
+/// Écran de lecture : bascule entre la grille d'accords, les paroles et la
+/// mélodie (partition). Le sélecteur de vue est toujours affiché en haut.
 class ChartScreen extends StatefulWidget {
   final Song song;
   final CatalogRepository repository;
@@ -26,8 +26,7 @@ class _ChartScreenState extends State<ChartScreen> {
   late _ViewMode _mode;
 
   Representation? get _grid => widget.song.primaryChordGrid;
-  Representation? get _lyrics => widget.song.primaryLyrics;
-  bool get _canToggle => _grid != null && _lyrics != null;
+  Representation? get _score => widget.song.primaryScore;
 
   @override
   void initState() {
@@ -61,19 +60,21 @@ class _ChartScreenState extends State<ChartScreen> {
               ),
           ],
         ),
-        actions: [
-          if (_canToggle)
-            Padding(
-              padding: const EdgeInsets.only(right: 16),
-              child: _ViewToggle(
-                mode: _mode,
-                onChanged: (m) => setState(() => _mode = m),
-              ),
-            ),
-        ],
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Container(height: 1, color: p.line),
+          preferredSize: const Size.fromHeight(52),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: _ViewToggle(
+                  mode: _mode,
+                  onChanged: (m) => setState(() => _mode = m),
+                ),
+              ),
+              Container(height: 1, color: p.line),
+            ],
+          ),
         ),
       ),
       body: _body(),
@@ -100,27 +101,29 @@ class _ChartScreenState extends State<ChartScreen> {
           },
         );
       case _ViewMode.lyrics:
-        final rep = _lyrics;
+        return LyricsPane(
+          song: widget.song,
+          repository: widget.repository,
+          lyricsRep: widget.song.primaryLyrics,
+        );
+      case _ViewMode.melody:
+        final rep = _score;
         if (rep == null) {
-          return const _Message('Pas de paroles pour ce morceau.');
+          return const _Message(
+            'Aucune partition mélodie pour ce morceau.\n'
+            'On peut en ajouter une au format ABC (assets/scores/<id>.abc).',
+          );
         }
-        return FutureBuilder<LyricSheet>(
-          future: widget.repository.loadLyrics(rep),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState != ConnectionState.done) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (snapshot.hasError) {
-              return _Message('Erreur de chargement : ${snapshot.error}');
-            }
-            return LyricSheetView(sheet: snapshot.data!);
-          },
+        return ScoreView(
+          song: widget.song,
+          repository: widget.repository,
+          scoreRep: rep,
         );
     }
   }
 }
 
-/// Bascule compacte Grille ⇄ Paroles, façon pilule (direction « Encre & Papier »).
+/// Sélecteur Grille · Paroles · Mélodie, façon pilule (DA « Encre & Papier »).
 class _ViewToggle extends StatelessWidget {
   final _ViewMode mode;
   final ValueChanged<_ViewMode> onChanged;
@@ -140,6 +143,7 @@ class _ViewToggle extends StatelessWidget {
         children: [
           _seg(context, 'Grille', _ViewMode.grid),
           _seg(context, 'Paroles', _ViewMode.lyrics),
+          _seg(context, 'Mélodie', _ViewMode.melody),
         ],
       ),
     );
@@ -181,7 +185,7 @@ class _Message extends StatelessWidget {
           child: Text(
             text,
             textAlign: TextAlign.center,
-            style: TextStyle(color: context.palette.inkMuted),
+            style: TextStyle(color: context.palette.inkMuted, height: 1.4),
           ),
         ),
       );

@@ -69,6 +69,9 @@ class Song {
   /// Première représentation « paroles + accords » (ChordPro), ou null.
   Representation? get primaryLyrics => _first(RepresentationType.lyrics);
 
+  /// Première représentation « mélodie / partition » (notation ABC), ou null.
+  Representation? get primaryScore => _first(RepresentationType.score);
+
   Representation? _first(RepresentationType type) {
     for (final r in representations) {
       if (r.type == type) return r;

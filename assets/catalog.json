@@ -49,6 +49,11 @@
           "id": "blues-in-c-lyrics",
           "type": "lyrics",
           "asset": "assets/lyrics/blues-in-c.pro"
+        },
+        {
+          "id": "blues-in-c-score",
+          "type": "score",
+          "asset": "assets/scores/blues-in-c.abc"
         }
       ],
       "artist": "Traditional"
@@ -980,6 +985,11 @@
           "id": "hey-there-delilah-grid",
           "type": "chordGrid",
           "asset": "assets/charts/hey-there-delilah.json"
+        },
+        {
+          "id": "hey-there-delilah-lyrics",
+          "type": "lyrics",
+          "asset": "assets/lyrics/hey-there-delilah.pro"
         }
       ],
       "artist": "Plain White T's"
@@ -1583,6 +1593,656 @@
         }
       ],
       "artist": "Taylor Swift"
+    },
+    {
+      "id": "and-what-if-i-don-t",
+      "title": "And What If I Don't",
+      "tags": [],
+      "representations": [
+        {
+          "id": "and-what-if-i-don-t-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/and-what-if-i-don-t.json"
+        }
+      ],
+      "artist": "Hancock Herbie"
+    },
+    {
+      "id": "background-music",
+      "title": "Background Music",
+      "tags": [],
+      "representations": [
+        {
+          "id": "background-music-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/background-music.json"
+        }
+      ],
+      "artist": "Marsh Warne"
+    },
+    {
+      "id": "backward-step-the",
+      "title": "Backward Step, The",
+      "tags": [],
+      "representations": [
+        {
+          "id": "backward-step-the-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/backward-step-the.json"
+        }
+      ],
+      "artist": "Payton Nicholas"
+    },
+    {
+      "id": "bean-and-the-boys",
+      "title": "Bean And The Boys",
+      "tags": [],
+      "representations": [
+        {
+          "id": "bean-and-the-boys-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/bean-and-the-boys.json"
+        }
+      ],
+      "artist": "Hawkins Coleman"
+    },
+    {
+      "id": "bellarosa",
+      "title": "Bellarosa",
+      "tags": [],
+      "representations": [
+        {
+          "id": "bellarosa-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/bellarosa.json"
+        }
+      ],
+      "artist": "Hope Elmo"
+    },
+    {
+      "id": "blues-connotation",
+      "title": "Blues Connotation",
+      "tags": [],
+      "representations": [
+        {
+          "id": "blues-connotation-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/blues-connotation.json"
+        }
+      ],
+      "artist": "Coleman Ornette"
+    },
+    {
+      "id": "boy-what-a-night",
+      "title": "Boy, What A Night",
+      "tags": [],
+      "representations": [
+        {
+          "id": "boy-what-a-night-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/boy-what-a-night.json"
+        }
+      ],
+      "artist": "Morgan Lee"
+    },
+    {
+      "id": "brake-s-sake",
+      "title": "Brake's Sake",
+      "tags": [],
+      "representations": [
+        {
+          "id": "brake-s-sake-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/brake-s-sake.json"
+        }
+      ],
+      "artist": "Monk Thelonious"
+    },
+    {
+      "id": "caribbean-fire-dance",
+      "title": "Caribbean Fire Dance",
+      "tags": [],
+      "representations": [
+        {
+          "id": "caribbean-fire-dance-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/caribbean-fire-dance.json"
+        }
+      ],
+      "artist": "Henderson Joe"
+    },
+    {
+      "id": "chan-s-song-never-said",
+      "title": "Chan's Song (Never Said)",
+      "tags": [],
+      "representations": [
+        {
+          "id": "chan-s-song-never-said-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/chan-s-song-never-said.json"
+        }
+      ],
+      "artist": "Herbie Hancock - Stevie Wonder"
+    },
+    {
+      "id": "change-of-heart",
+      "title": "Change Of Heart",
+      "tags": [],
+      "representations": [
+        {
+          "id": "change-of-heart-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/change-of-heart.json"
+        }
+      ],
+      "artist": "Metheny Pat"
+    },
+    {
+      "id": "dear-john",
+      "title": "Dear John",
+      "tags": [],
+      "representations": [
+        {
+          "id": "dear-john-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/dear-john.json"
+        }
+      ],
+      "artist": "Hubbard Freddie"
+    },
+    {
+      "id": "edda",
+      "title": "Edda",
+      "tags": [],
+      "representations": [
+        {
+          "id": "edda-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/edda.json"
+        }
+      ],
+      "artist": "Shorter Wayne"
+    },
+    {
+      "id": "eisenhower",
+      "title": "Eisenhower",
+      "tags": [],
+      "representations": [
+        {
+          "id": "eisenhower-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/eisenhower.json"
+        }
+      ],
+      "artist": "Scofield John"
+    },
+    {
+      "id": "first-song",
+      "title": "First Song",
+      "tags": [],
+      "representations": [
+        {
+          "id": "first-song-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/first-song.json"
+        }
+      ],
+      "artist": "Haden Charlie"
+    },
+    {
+      "id": "herzog",
+      "title": "Herzog",
+      "tags": [],
+      "representations": [
+        {
+          "id": "herzog-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/herzog.json"
+        }
+      ],
+      "artist": "Hutcherson Bobby"
+    },
+    {
+      "id": "hindsight",
+      "title": "Hindsight",
+      "tags": [],
+      "representations": [
+        {
+          "id": "hindsight-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/hindsight.json"
+        }
+      ],
+      "artist": "Walton Cedar"
+    },
+    {
+      "id": "johnny-come-lately",
+      "title": "Johnny Come Lately",
+      "tags": [],
+      "representations": [
+        {
+          "id": "johnny-come-lately-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/johnny-come-lately.json"
+        }
+      ],
+      "artist": "Strayhorn Billy"
+    },
+    {
+      "id": "klactoveedsedstene",
+      "title": "Klactoveedsedstene",
+      "tags": [],
+      "representations": [
+        {
+          "id": "klactoveedsedstene-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/klactoveedsedstene.json"
+        }
+      ],
+      "artist": "Parker Charlie"
+    },
+    {
+      "id": "lonely-woman",
+      "title": "Lonely Woman",
+      "tags": [],
+      "representations": [
+        {
+          "id": "lonely-woman-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/lonely-woman.json"
+        }
+      ],
+      "artist": "Silver Horace"
+    },
+    {
+      "id": "lost",
+      "title": "Lost",
+      "tags": [],
+      "representations": [
+        {
+          "id": "lost-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/lost.json"
+        }
+      ],
+      "artist": "Shorter Wayne"
+    },
+    {
+      "id": "love-letters",
+      "title": "Love Letters",
+      "tags": [],
+      "representations": [
+        {
+          "id": "love-letters-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/love-letters.json"
+        }
+      ],
+      "artist": "Young Victor"
+    },
+    {
+      "id": "midnight-voyage",
+      "title": "Midnight Voyage",
+      "tags": [],
+      "representations": [
+        {
+          "id": "midnight-voyage-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/midnight-voyage.json"
+        }
+      ],
+      "artist": "Calderazzo Joey"
+    },
+    {
+      "id": "minor-blues",
+      "title": "Minor Blues",
+      "tags": [],
+      "representations": [
+        {
+          "id": "minor-blues-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/minor-blues.json"
+        }
+      ],
+      "artist": "Rosenwinkel Kurt"
+    },
+    {
+      "id": "minuano-six-eight",
+      "title": "Minuano (Six Eight)",
+      "tags": [],
+      "representations": [
+        {
+          "id": "minuano-six-eight-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/minuano-six-eight.json"
+        }
+      ],
+      "artist": "Pat Metheny - Lyle Mays"
+    },
+    {
+      "id": "night-has-a-thousand-eyes-coltrane-changes-the",
+      "title": "Night Has A Thousand Eyes (Coltrane Changes), The",
+      "tags": [],
+      "representations": [
+        {
+          "id": "night-has-a-thousand-eyes-coltrane-changes-the-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/night-has-a-thousand-eyes-coltrane-changes-the.json"
+        }
+      ],
+      "artist": "Jerry-Brainin"
+    },
+    {
+      "id": "nostalgia",
+      "title": "Nostalgia",
+      "tags": [],
+      "representations": [
+        {
+          "id": "nostalgia-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/nostalgia.json"
+        }
+      ],
+      "artist": "Navarro Fats"
+    },
+    {
+      "id": "november-15",
+      "title": "November 15",
+      "tags": [],
+      "representations": [
+        {
+          "id": "november-15-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/november-15.json"
+        }
+      ],
+      "artist": "Garrett Kenny"
+    },
+    {
+      "id": "oblivion",
+      "title": "Oblivion",
+      "tags": [],
+      "representations": [
+        {
+          "id": "oblivion-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/oblivion.json"
+        }
+      ],
+      "artist": "Powell Bud"
+    },
+    {
+      "id": "oriental-folk-song",
+      "title": "Oriental Folk Song",
+      "tags": [],
+      "representations": [
+        {
+          "id": "oriental-folk-song-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/oriental-folk-song.json"
+        }
+      ],
+      "artist": "Shorter Wayne"
+    },
+    {
+      "id": "pursuance",
+      "title": "Pursuance",
+      "tags": [],
+      "representations": [
+        {
+          "id": "pursuance-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/pursuance.json"
+        }
+      ],
+      "artist": "Coltrane John"
+    },
+    {
+      "id": "repetition",
+      "title": "Repetition",
+      "tags": [],
+      "representations": [
+        {
+          "id": "repetition-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/repetition.json"
+        }
+      ],
+      "artist": "Hefti Neal"
+    },
+    {
+      "id": "resolution",
+      "title": "Resolution",
+      "tags": [],
+      "representations": [
+        {
+          "id": "resolution-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/resolution.json"
+        }
+      ],
+      "artist": "Coltrane John"
+    },
+    {
+      "id": "se-or-blues",
+      "title": "Señor Blues",
+      "tags": [],
+      "representations": [
+        {
+          "id": "se-or-blues-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/se-or-blues.json"
+        }
+      ],
+      "artist": "Silver Horace"
+    },
+    {
+      "id": "short-story",
+      "title": "Short Story",
+      "tags": [],
+      "representations": [
+        {
+          "id": "short-story-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/short-story.json"
+        }
+      ],
+      "artist": "Dorham Kenny"
+    },
+    {
+      "id": "song-for-bilbao",
+      "title": "Song For Bilbao",
+      "tags": [],
+      "representations": [
+        {
+          "id": "song-for-bilbao-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/song-for-bilbao.json"
+        }
+      ],
+      "artist": "Metheny Pat"
+    },
+    {
+      "id": "st-vitus-dance-the",
+      "title": "St. Vitus Dance, The",
+      "tags": [],
+      "representations": [
+        {
+          "id": "st-vitus-dance-the-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/st-vitus-dance-the.json"
+        }
+      ],
+      "artist": "Silver Horace"
+    },
+    {
+      "id": "strange-meeting",
+      "title": "Strange Meeting",
+      "tags": [],
+      "representations": [
+        {
+          "id": "strange-meeting-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/strange-meeting.json"
+        }
+      ],
+      "artist": "Frisell Bill"
+    },
+    {
+      "id": "strasbourg-st-denis",
+      "title": "Strasbourg-St. Denis",
+      "tags": [],
+      "representations": [
+        {
+          "id": "strasbourg-st-denis-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/strasbourg-st-denis.json"
+        }
+      ],
+      "artist": "Hargrove Roy"
+    },
+    {
+      "id": "terra-nova",
+      "title": "Terra Nova",
+      "tags": [],
+      "representations": [
+        {
+          "id": "terra-nova-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/terra-nova.json"
+        }
+      ],
+      "artist": "Rosenwinkel Kurt"
+    },
+    {
+      "id": "theme-for-ernie",
+      "title": "Theme For Ernie",
+      "tags": [],
+      "representations": [
+        {
+          "id": "theme-for-ernie-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/theme-for-ernie.json"
+        }
+      ],
+      "artist": "Lacey Fred"
+    },
+    {
+      "id": "these-are-soulful-days",
+      "title": "These Are Soulful Days",
+      "tags": [],
+      "representations": [
+        {
+          "id": "these-are-soulful-days-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/these-are-soulful-days.json"
+        }
+      ],
+      "artist": "Massey Cal"
+    },
+    {
+      "id": "this-here",
+      "title": "This Here",
+      "tags": [],
+      "representations": [
+        {
+          "id": "this-here-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/this-here.json"
+        }
+      ],
+      "artist": "Timmons Bobby"
+    },
+    {
+      "id": "un-poco-loco",
+      "title": "Un Poco Loco",
+      "tags": [],
+      "representations": [
+        {
+          "id": "un-poco-loco-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/un-poco-loco.json"
+        }
+      ],
+      "artist": "Powell Bud"
+    },
+    {
+      "id": "unconditional-love",
+      "title": "Unconditional Love",
+      "tags": [],
+      "representations": [
+        {
+          "id": "unconditional-love-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/unconditional-love.json"
+        }
+      ],
+      "artist": "Allen Geri"
+    },
+    {
+      "id": "virgo-silver",
+      "title": "Virgo (Silver)",
+      "tags": [],
+      "representations": [
+        {
+          "id": "virgo-silver-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/virgo-silver.json"
+        }
+      ],
+      "artist": "Silver Horace"
+    },
+    {
+      "id": "wabash",
+      "title": "Wabash",
+      "tags": [],
+      "representations": [
+        {
+          "id": "wabash-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/wabash.json"
+        }
+      ],
+      "artist": "Adderley Cannonball"
+    },
+    {
+      "id": "waltz-for-ruth",
+      "title": "Waltz For Ruth",
+      "tags": [],
+      "representations": [
+        {
+          "id": "waltz-for-ruth-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/waltz-for-ruth.json"
+        }
+      ],
+      "artist": "Haden Charlie"
+    },
+    {
+      "id": "you-taught-my-heart-to-sing",
+      "title": "You Taught My Heart To Sing",
+      "tags": [],
+      "representations": [
+        {
+          "id": "you-taught-my-heart-to-sing-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/you-taught-my-heart-to-sing.json"
+        }
+      ],
+      "artist": "Tyner McCoy"
+    },
+    {
+      "id": "zhivago",
+      "title": "Zhivago",
+      "tags": [],
+      "representations": [
+        {
+          "id": "zhivago-grid",
+          "type": "chordGrid",
+          "asset": "assets/charts/zhivago.json"
+        }
+      ],
+      "artist": "Rosenwinkel Kurt"
     }
   ]
 }
