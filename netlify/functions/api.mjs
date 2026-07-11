@@ -1,7 +1,14 @@
-// Proxy d'agrégation Rubato — version Netlify Function (Node 20, fetch global).
-// Même contrat d'API que le proxy Python de ./proxy (dev local Docker) :
+// Backend d'agrégation Rubato — Netlify Function (Node 20, fetch global).
 //   GET /health  /search?q=  /representation?type=&source=&ref=
-// Sources : LRCLIB (paroles) + The Session (mélodie ABC, domaine public).
+// Sources :
+//   - iReal Pro (grilles d'accords) : corpus pré-parsé depuis le forum, embarqué
+//     (data/ireal-*.json, régénéré par scripts/build_ireal_corpus.py).
+//   - LRCLIB (paroles), en direct.
+//   - The Session (mélodie ABC, domaine public), en direct.
+
+// Corpus iReal Pro embarqué (grilles). Index léger pour la recherche + charts.
+import irealIndex from "./data/ireal-index.json";
+import irealCharts from "./data/ireal-charts.json";
 
 const USER_AGENT = "Rubato/0.1 (carnet d'accords personnel)";
 const BROWSER_UA =
@@ -123,12 +130,42 @@ async function tsAbc(ref) {
   return header.join("\n") + "\n" + body + "\n";
 }
 
-// --- Agrégation ------------------------------------------------------------
+// --- iReal Pro (grilles d'accords) : recherche dans le corpus embarqué -----
 const SCORE_SOURCES = new Set(["thesession"]); // mélodie = domaine public only
+const IREAL_LIMIT = 15;
 
+function norm(s) {
+  return (s || "")
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+function irealSearch(q) {
+  const nq = norm(q);
+  if (!nq) return [];
+  const out = [];
+  for (const it of irealIndex) {
+    if (out.length >= IREAL_LIMIT) break;
+    if (norm(it.title).includes(nq) || (it.artist && norm(it.artist).includes(nq))) {
+      out.push({
+        title: it.title,
+        artist: it.artist || "",
+        type: "chordGrid",
+        source: "irealpro",
+        ref: it.id,
+      });
+    }
+  }
+  return out;
+}
+
+// --- Agrégation ------------------------------------------------------------
 async function handleSearch(q) {
   const settled = await Promise.allSettled([lrclibSearch(q), tsSearch(q)]);
-  const partials = [];
+  // Grilles iReal en tête (Rubato est un carnet d'accords), puis paroles/mélodie.
+  const partials = [...irealSearch(q)];
   for (const res of settled) if (res.status === "fulfilled") partials.push(...res.value);
 
   const agg = new Map();
@@ -152,6 +189,14 @@ async function handleSearch(q) {
 }
 
 const FETCHERS = {
+  // Grille iReal : lue dans le corpus embarqué, renvoyée en JSON (format pivot).
+  "chordGrid:irealpro": {
+    fn: (ref) => {
+      const c = irealCharts[ref];
+      return c ? JSON.stringify(c) : null;
+    },
+    format: "chart-json",
+  },
   "lyrics:lrclib": { fn: lrclibLyrics, format: "chordpro" },
   "score:thesession": { fn: tsAbc, format: "abc" },
 };
@@ -163,7 +208,11 @@ export default async (req) => {
   const path = url.pathname;
 
   if (path.endsWith("/health")) {
-    return json({ ok: true, sources: ["lrclib", "thesession"] });
+    return json({
+      ok: true,
+      sources: ["irealpro", "lrclib", "thesession"],
+      irealSongs: irealIndex.length,
+    });
   }
 
   if (path.endsWith("/search")) {

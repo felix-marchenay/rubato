@@ -7,8 +7,14 @@ car Netlify n'exécute pas de serveur Python persistant.
 - `netlify/public/index.html` — page d'accueil statique.
 - [`../netlify.toml`](../netlify.toml) — config (publish + functions, Node 20).
 
-Sources agrégées : LRCLIB (paroles → ChordPro) + The Session (mélodies → ABC,
-domaine public). Garde-fou : une mélodie hors source domaine public est refusée (403).
+Sources agrégées :
+- **iReal Pro** (grilles d'accords) — corpus pré-parsé depuis le forum, embarqué
+  dans `netlify/functions/data/ireal-*.json`. Régénérer avec
+  `python3 scripts/build_ireal_corpus.py` puis redéployer.
+- **LRCLIB** (paroles → ChordPro), en direct.
+- **The Session** (mélodies → ABC, domaine public), en direct.
+
+Garde-fou : une mélodie hors source domaine public est refusée (403).
 
 ## Déployer (via Git)
 
