@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../data/catalog_repository.dart';
+import '../data/library_repository.dart';
 import '../domain/chord_chart.dart';
 import '../domain/song.dart';
 import 'theme.dart';
@@ -14,7 +14,7 @@ enum _ViewMode { grid, lyrics, melody }
 /// mélodie (partition). Le sélecteur de vue est toujours affiché en haut.
 class ChartScreen extends StatefulWidget {
   final Song song;
-  final CatalogRepository repository;
+  final LibraryRepository repository;
 
   const ChartScreen({super.key, required this.song, required this.repository});
 
@@ -31,7 +31,14 @@ class _ChartScreenState extends State<ChartScreen> {
   @override
   void initState() {
     super.initState();
-    _mode = _grid != null ? _ViewMode.grid : _ViewMode.lyrics;
+    // Vue par défaut : grille si dispo, sinon paroles, sinon mélodie.
+    _mode = _grid != null
+        ? _ViewMode.grid
+        : widget.song.primaryLyrics != null
+            ? _ViewMode.lyrics
+            : _score != null
+                ? _ViewMode.melody
+                : _ViewMode.lyrics;
   }
 
   @override

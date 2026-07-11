@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../data/catalog_repository.dart';
+import '../data/library_repository.dart';
 import '../domain/song.dart';
 import 'chart_screen.dart';
+import 'online_search_screen.dart';
 import 'theme.dart';
 
 /// Écran bibliothèque : table des matières du carnet + recherche.
@@ -14,7 +15,7 @@ class LibraryScreen extends StatefulWidget {
 }
 
 class _LibraryScreenState extends State<LibraryScreen> {
-  final _repository = const CatalogRepository();
+  final _repository = const LibraryRepository();
   late Future<List<Song>> _songsFuture;
   String _query = '';
 
@@ -22,6 +23,20 @@ class _LibraryScreenState extends State<LibraryScreen> {
   void initState() {
     super.initState();
     _songsFuture = _repository.loadSongs();
+  }
+
+  void _reload() {
+    setState(() => _songsFuture = _repository.loadSongs());
+  }
+
+  Future<void> _openOnlineSearch() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => OnlineSearchScreen(repository: _repository),
+      ),
+    );
+    // La bibliothèque perso a pu changer : on recharge la liste au retour.
+    if (mounted) _reload();
   }
 
   List<Song> _filter(List<Song> songs) {
@@ -41,6 +56,15 @@ class _LibraryScreenState extends State<LibraryScreen> {
       appBar: AppBar(
         titleSpacing: 20,
         title: const _Wordmark(),
+        actions: [
+          IconButton(
+            onPressed: _openOnlineSearch,
+            icon: const Icon(Icons.travel_explore),
+            color: p.brass,
+            tooltip: 'Chercher un morceau en ligne',
+          ),
+          const SizedBox(width: 8),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
           child: Container(height: 1, color: p.line),

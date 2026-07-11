@@ -32,6 +32,26 @@ RepresentationType representationTypeFromString(String s) {
   }
 }
 
+/// Réciproque de [representationTypeFromString] (sérialisation, appels réseau).
+String representationTypeToString(RepresentationType t) {
+  switch (t) {
+    case RepresentationType.chordGrid:
+      return 'chordGrid';
+    case RepresentationType.tablature:
+      return 'tablature';
+    case RepresentationType.lyrics:
+      return 'lyrics';
+    case RepresentationType.score:
+      return 'score';
+    case RepresentationType.pdf:
+      return 'pdf';
+    case RepresentationType.image:
+      return 'image';
+    case RepresentationType.unknown:
+      return 'unknown';
+  }
+}
+
 /// Une façon de présenter un morceau. En v0, [assetPath] pointe vers un chart
 /// JSON embarqué décodé par un codec.
 class Representation {

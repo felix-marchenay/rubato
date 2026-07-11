@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:webview_flutter/webview_flutter.dart';
 
-import '../../data/catalog_repository.dart';
+import '../../data/library_repository.dart';
 import '../../domain/song.dart';
 import '../theme.dart';
 
@@ -13,7 +13,7 @@ import '../theme.dart';
 /// façon real book : une portée en clef de sol, accords affichés au-dessus.
 class ScoreView extends StatefulWidget {
   final Song song;
-  final CatalogRepository repository;
+  final LibraryRepository repository;
   final Representation scoreRep;
 
   const ScoreView({

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../codec/chordpro_codec.dart';
-import '../../data/catalog_repository.dart';
+import '../../data/library_repository.dart';
 import '../../data/lrclib_service.dart';
 import '../../data/lyrics_store.dart';
 import '../../domain/lyric_sheet.dart';
@@ -18,7 +18,7 @@ import 'lyric_sheet_view.dart';
 /// (fichier .pro sur Android) pour être conservées hors-ligne.
 class LyricsPane extends StatefulWidget {
   final Song song;
-  final CatalogRepository repository;
+  final LibraryRepository repository;
   final Representation? lyricsRep;
 
   const LyricsPane({

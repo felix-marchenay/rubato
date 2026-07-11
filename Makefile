@@ -4,7 +4,12 @@
 RUN  := docker compose run --rm flutter
 RUNP := docker compose run --rm --service-ports flutter
 
-.PHONY: build shell create get analyze test web apk telegram apk-telegram clean doctor
+# URL du proxy d'agrégation (recherche en ligne). Surchargeable :
+#   make web  RUBATO_API=http://192.168.1.10:8091
+#   make apk  RUBATO_API=https://mon-proxy.example
+RUBATO_API ?= http://localhost:8091
+
+.PHONY: build shell create get analyze test web apk telegram apk-telegram clean doctor proxy
 
 ## build   : construire l'image Docker de dev
 build:
@@ -33,11 +38,16 @@ test:
 
 ## web     : lancer l'app en mode web (http://localhost:8090)
 web:
-	$(RUNP) flutter run -d web-server --web-hostname 0.0.0.0 --web-port 8080
+	$(RUNP) flutter run -d web-server --web-hostname 0.0.0.0 --web-port 8080 \
+		--dart-define=RUBATO_API=$(RUBATO_API)
+
+## proxy   : lancer le proxy d'agrégation (recherche en ligne) en arrière-plan
+proxy:
+	docker compose up -d proxy
 
 ## apk     : builder l'APK Android (release)
 apk:
-	$(RUN) flutter build apk --release
+	$(RUN) flutter build apk --release --dart-define=RUBATO_API=$(RUBATO_API)
 
 ## telegram: envoyer l'APK déjà buildé sur Telegram (config dans .env)
 telegram:
