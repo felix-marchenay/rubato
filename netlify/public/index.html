@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Rubato — API</title>
+    <style>
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        background: #f4eee2;
+        color: #201d18;
+        font-family: system-ui, -apple-system, sans-serif;
+      }
+      main { max-width: 34rem; padding: 2rem; }
+      h1 { font-weight: 600; letter-spacing: 0.2px; }
+      .brass { color: #ae7c36; }
+      code {
+        background: #ede3cf;
+        color: #6e4e1e;
+        padding: 0.1rem 0.4rem;
+        border-radius: 6px;
+      }
+      ul { line-height: 1.9; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1><em>rubato</em> <span class="brass">· API</span></h1>
+      <p>Proxy d'agrégation de morceaux (backend de l'app Rubato). Endpoints :</p>
+      <ul>
+        <li><code>GET /health</code></li>
+        <li><code>GET /search?q=…</code></li>
+        <li><code>GET /representation?type=&amp;source=&amp;ref=</code></li>
+      </ul>
+      <p>Sources : LRCLIB (paroles) · The Session (mélodies, domaine public).</p>
+    </main>
+  </body>
+</html>

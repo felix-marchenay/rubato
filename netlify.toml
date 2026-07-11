@@ -1,0 +1,20 @@
+# Déploiement du backend Rubato (proxy d'agrégation) sur Netlify.
+#
+# Netlify n'exécute pas de serveur Python persistant : le proxy FastAPI de
+# ./proxy (dev local via Docker) est ici porté en **Netlify Function** (Node),
+# qui expose les mêmes routes : /health, /search, /representation.
+#
+# Pas de build applicatif ici (le web Flutter n'est PAS déployé par ce fichier) :
+# on publie une page statique minimale + la function.
+
+[build]
+  publish = "netlify/public"
+  # Pas de commande de build : uniquement des assets statiques + une function.
+  command = ""
+
+[build.environment]
+  NODE_VERSION = "20"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
