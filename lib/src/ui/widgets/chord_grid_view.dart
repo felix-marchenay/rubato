@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 
 import '../../domain/chord_chart.dart';
 import '../chord_format.dart';
+import '../theme.dart';
 
-/// Rendu « grille fixe façon iReal Pro » : mesures en cases régulières,
-/// N mesures par ligne (adapté à la largeur), chaque section démarre une
-/// nouvelle ligne. Tonalité + signature rythmique en tête.
+/// Rendu « grille gravée façon real book » : en-tête (tonalité + mesure),
+/// sections marquées d'un repère (A, B…) façon lettre de renvoi, mesures en
+/// cases régulières — N par ligne selon la largeur.
 class ChordGridView extends StatelessWidget {
   final ChordChart chart;
   const ChordGridView({super.key, required this.chart});
@@ -22,17 +23,26 @@ class ChordGridView extends StatelessWidget {
       builder: (context, constraints) {
         final barsPerRow = _barsPerRow(constraints.maxWidth);
         return SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _ChartHeader(chart: chart),
-              const SizedBox(height: 16),
-              for (final section in chart.sections) ...[
-                _SectionGrid(section: section, barsPerRow: barsPerRow),
-                const SizedBox(height: 16),
-              ],
-            ],
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1040),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _ChartHeader(chart: chart),
+                  const SizedBox(height: 24),
+                  for (var s = 0; s < chart.sections.length; s++) ...[
+                    _SectionBlock(
+                      section: chart.sections[s],
+                      barsPerRow: barsPerRow,
+                    ),
+                    if (s != chart.sections.length - 1)
+                      const SizedBox(height: 28),
+                  ],
+                ],
+              ),
+            ),
           ),
         );
       },
@@ -40,6 +50,7 @@ class ChordGridView extends StatelessWidget {
   }
 }
 
+/// Ligne de méta : tonalité et mesure, en petites étiquettes encadrées.
 class _ChartHeader extends StatelessWidget {
   final ChordChart chart;
   const _ChartHeader({required this.chart});
@@ -47,33 +58,51 @@ class _ChartHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final chips = <Widget>[
-      if (chart.key != null) _pill(context, 'Tonalité ${chart.key}'),
-      if (chart.time != null) _pill(context, 'Mesure ${chart.time}'),
+      if (chart.key != null) _MetaChip(label: 'TONALITÉ', value: '${chart.key}'),
+      if (chart.time != null) _MetaChip(label: 'MESURE', value: '${chart.time}'),
     ];
     if (chips.isEmpty) return const SizedBox.shrink();
-    return Wrap(spacing: 8, runSpacing: 8, children: chips);
+    return Wrap(spacing: 10, runSpacing: 10, children: chips);
   }
+}
 
-  Widget _pill(BuildContext context, String text) {
-    final scheme = Theme.of(context).colorScheme;
+class _MetaChip extends StatelessWidget {
+  final String label;
+  final String value;
+  const _MetaChip({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: scheme.secondaryContainer,
-        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: p.line),
+        borderRadius: BorderRadius.circular(8),
       ),
-      child: Text(
-        text,
-        style: TextStyle(color: scheme.onSecondaryContainer, fontWeight: FontWeight.w600),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.baseline,
+        textBaseline: TextBaseline.alphabetic,
+        children: [
+          Text(label, style: RubatoType.caption(p.inkMuted)),
+          const SizedBox(width: 8),
+          Text(
+            value,
+            style: RubatoType.serif(
+                size: 15, weight: FontWeight.w600, color: p.ink),
+          ),
+        ],
       ),
     );
   }
 }
 
-class _SectionGrid extends StatelessWidget {
+/// Une section : repère (A, B…) + filet, puis la grille de mesures.
+class _SectionBlock extends StatelessWidget {
   final Section section;
   final int barsPerRow;
-  const _SectionGrid({required this.section, required this.barsPerRow});
+  const _SectionBlock({required this.section, required this.barsPerRow});
 
   @override
   Widget build(BuildContext context) {
@@ -87,7 +116,44 @@ class _SectionGrid extends StatelessWidget {
     }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: rows,
+      children: [
+        if (section.label != null) ...[
+          _SectionMark(label: section.label!),
+          const SizedBox(height: 10),
+        ],
+        ...rows,
+      ],
+    );
+  }
+}
+
+/// Repère de section en pastille laiton, suivi d'un filet — lettre de renvoi.
+class _SectionMark extends StatelessWidget {
+  final String label;
+  const _SectionMark({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    return Row(
+      children: [
+        Container(
+          width: 26,
+          height: 26,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: p.brassTint,
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Text(
+            label,
+            style: RubatoType.serif(
+                size: 14, weight: FontWeight.w700, color: p.onBrassTint),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(child: Container(height: 1, color: p.line)),
+      ],
     );
   }
 }
@@ -105,7 +171,12 @@ class _BarRow extends StatelessWidget {
       for (var i = bars.length; i < barsPerRow; i++)
         const Expanded(child: SizedBox()),
     ];
-    return Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: cells);
+    // IntrinsicHeight borne la hauteur de la ligne (= case la plus haute) : sans
+    // lui, `CrossAxisAlignment.stretch` reçoit une hauteur infinie (Row imbriqué
+    // dans un SingleChildScrollView vertical) et fait planter le layout.
+    return IntrinsicHeight(
+      child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: cells),
+    );
   }
 }
 
@@ -115,11 +186,12 @@ class _BarCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    final p = context.palette;
     return Container(
-      constraints: const BoxConstraints(minHeight: 56),
+      constraints: const BoxConstraints(minHeight: 68),
       decoration: BoxDecoration(
-        border: Border.all(color: scheme.outlineVariant),
+        color: p.surface,
+        border: Border.all(color: p.line),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
       child: Center(
@@ -128,20 +200,68 @@ class _BarCell extends StatelessWidget {
           children: [
             for (final chord in bar.chords)
               Flexible(
-                child: Text(
-                  ChordFormat.display(chord),
-                  textAlign: TextAlign.center,
-                  overflow: TextOverflow.visible,
-                  style: TextStyle(
-                    fontSize: bar.chords.length > 1 ? 15 : 18,
-                    fontWeight: FontWeight.w600,
-                    color: scheme.onSurface,
-                  ),
+                child: _ChordText(
+                  chord: chord,
+                  compact: bar.chords.length > 1,
                 ),
               ),
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Accord gravé : racine en serif, qualité en exposant, basse atténuée.
+class _ChordText extends StatelessWidget {
+  final Chord chord;
+  final bool compact;
+  const _ChordText({required this.chord, required this.compact});
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    final parts = ChordFormat.parts(chord);
+    final rootSize = compact ? 17.0 : 22.0;
+
+    if (parts.isNoChord) {
+      return Text(
+        'N.C.',
+        textAlign: TextAlign.center,
+        style: RubatoType.serif(
+          size: rootSize * 0.8,
+          weight: FontWeight.w500,
+          color: p.inkMuted,
+          style: FontStyle.italic,
+        ),
+      );
+    }
+
+    final rootStyle = RubatoType.serif(
+        size: rootSize, weight: FontWeight.w600, color: p.ink);
+    final qualityStyle = RubatoType.serif(
+        size: rootSize * 0.58, weight: FontWeight.w600, color: p.ink);
+    final bassStyle = RubatoType.serif(
+        size: rootSize * 0.62, weight: FontWeight.w500, color: p.inkMuted);
+
+    return Text.rich(
+      TextSpan(
+        children: [
+          TextSpan(text: parts.root, style: rootStyle),
+          if (parts.quality.isNotEmpty)
+            WidgetSpan(
+              alignment: PlaceholderAlignment.top,
+              child: Padding(
+                padding: const EdgeInsets.only(left: 1),
+                child: Text(parts.quality, style: qualityStyle),
+              ),
+            ),
+          if (parts.bass != null)
+            TextSpan(text: '/${parts.bass}', style: bassStyle),
+        ],
+      ),
+      textAlign: TextAlign.center,
+      overflow: TextOverflow.visible,
     );
   }
 }

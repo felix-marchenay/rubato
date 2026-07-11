@@ -1,11 +1,11 @@
 {
-    "name": "mscore",
-    "short_name": "mscore",
+    "name": "Rubato",
+    "short_name": "Rubato",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#F4EEE2",
+    "theme_color": "#AE7C36",
+    "description": "Rubato — carnet d'accords : grilles style iReal Pro.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

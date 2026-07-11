@@ -3,5 +3,5 @@ import 'package:flutter/material.dart';
 import 'src/ui/app.dart';
 
 void main() {
-  runApp(const MscoreApp());
+  runApp(const RubatoApp());
 }

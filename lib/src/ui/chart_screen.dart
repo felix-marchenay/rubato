@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../data/catalog_repository.dart';
 import '../domain/chord_chart.dart';
 import '../domain/song.dart';
+import 'theme.dart';
 import 'widgets/chord_grid_view.dart';
 
 /// Écran de lecture : affiche la grille d'accords d'un morceau.
@@ -14,19 +15,32 @@ class ChartScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
     final rep = song.primaryChordGrid;
     return Scaffold(
       appBar: AppBar(
+        titleSpacing: 4,
         title: Column(
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(song.title, style: const TextStyle(fontSize: 18)),
+            Text(
+              song.title,
+              style: RubatoType.serif(
+                  size: 19, weight: FontWeight.w600, color: p.ink),
+              overflow: TextOverflow.ellipsis,
+            ),
             if (song.artist != null)
               Text(
                 song.artist!,
-                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.normal),
+                style: TextStyle(fontSize: 12, color: p.inkMuted),
+                overflow: TextOverflow.ellipsis,
               ),
           ],
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: p.line),
         ),
       ),
       body: rep == null
@@ -55,7 +69,11 @@ class _Message extends StatelessWidget {
   Widget build(BuildContext context) => Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
-          child: Text(text, textAlign: TextAlign.center),
+          child: Text(
+            text,
+            textAlign: TextAlign.center,
+            style: TextStyle(color: context.palette.inkMuted),
+          ),
         ),
       );
 }
