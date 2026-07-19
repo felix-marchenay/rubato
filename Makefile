@@ -4,11 +4,24 @@
 RUN  := docker compose run --rm flutter
 RUNP := docker compose run --rm --service-ports flutter
 
+# Image Node (backend Netlify) — rien n'est installé sur l'hôte.
+NODE_IMAGE ?= node:24-slim
+
+# « make search creep radiohead » : les mots après `search` forment la requête.
+# Make les prend pour des cibles → on les neutralise, MAIS seulement quand la
+# 1re cible est `search` (sinon on écraserait test/web/… par accident).
+ifeq (search,$(firstword $(MAKECMDGOALS)))
+SEARCH_QUERY := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
+ifneq ($(SEARCH_QUERY),)
+$(eval $(SEARCH_QUERY):;@:)
+endif
+endif
+
 # Backend de recherche en ligne (fonction Netlify). Surchargeable :
 #   make web  RUBATO_API=https://autre-backend.example
 RUBATO_API ?= https://rubato1.netlify.app
 
-.PHONY: build shell create get analyze test web apk telegram apk-telegram clean doctor
+.PHONY: build shell create get analyze test web apk telegram apk-telegram clean doctor backend search
 
 ## build   : construire l'image Docker de dev
 build:
@@ -51,6 +64,19 @@ telegram:
 ## apk-telegram : builder l'APK PUIS l'envoyer sur Telegram
 apk-telegram: apk
 	$(RUN) bash scripts/send-telegram.sh
+
+## search  : recherche rapide, résultats lisibles — make search creep radiohead
+search:
+	@docker run --rm --init -e Q="$(SEARCH_QUERY)" \
+		-v "$(CURDIR)":/app -w /app $(NODE_IMAGE) node scripts/backend_cli.mjs
+
+## backend : tester le backend Netlify en local (Node via Docker, accès réseau réel)
+##   make backend q='so what'                      → /search?q=so what (scrape live)
+##   make backend route='/health'
+##   make backend route='/representation?type=chordGrid&source=ultimateguitar&ref=<url-encodée>'
+backend:
+	docker run --rm --init -e Q="$(q)" -e ROUTE="$(route)" \
+		-v "$(CURDIR)":/app -w /app $(NODE_IMAGE) node scripts/backend_cli.mjs
 
 ## shell   : ouvrir un shell dans le conteneur
 shell:

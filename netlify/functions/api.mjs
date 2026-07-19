@@ -7,8 +7,10 @@
 //   - The Session (mélodie ABC, domaine public), en direct.
 
 // Corpus iReal Pro embarqué (grilles). Index léger pour la recherche + charts.
-import irealIndex from "./data/ireal-index.json";
-import irealCharts from "./data/ireal-charts.json";
+import irealIndex from "./data/ireal-index.json" with { type: "json" };
+import irealCharts from "./data/ireal-charts.json" with { type: "json" };
+// Scraping live de suites d'accords (Ultimate Guitar, e-chords, forum iReal).
+import { scrapeSearch, SCRAPE_FETCHERS, SCRAPE_SOURCES, decodeEntities } from "./scrapers.mjs";
 
 const USER_AGENT = "Rubato/0.1 (carnet d'accords personnel)";
 const BROWSER_UA =
@@ -163,27 +165,35 @@ function irealSearch(q) {
 
 // --- Agrégation ------------------------------------------------------------
 async function handleSearch(q) {
-  const settled = await Promise.allSettled([lrclibSearch(q), tsSearch(q)]);
-  // Grilles iReal en tête (Rubato est un carnet d'accords), puis paroles/mélodie.
+  const settled = await Promise.allSettled([lrclibSearch(q), tsSearch(q), scrapeSearch(q)]);
+  // Grilles du corpus iReal embarqué en tête (harmonie fiable, parsée), puis les
+  // suites d'accords scrapées en live, puis paroles/mélodie.
   const partials = [...irealSearch(q)];
   for (const res of settled) if (res.status === "fulfilled") partials.push(...res.value);
 
   const agg = new Map();
   for (const p of partials) {
-    const key = slugify(p.title) + "|" + slugify(p.artist);
+    if (!p.title) continue;
+    // Certaines sources (LRCLIB…) renvoient des libellés HTML-encodés : on
+    // décode avant de slugifier (sinon « A &amp; B » → id « a-amp-b »).
+    const title = decodeEntities(p.title);
+    const artist = decodeEntities(p.artist);
+    const key = slugify(title) + "|" + slugify(artist);
     let cand = agg.get(key);
     if (!cand) {
       cand = {
-        id: [slugify(p.title), slugify(p.artist)].filter(Boolean).join("-"),
-        title: p.title,
-        artist: p.artist,
+        id: [slugify(title), slugify(artist)].filter(Boolean).join("-"),
+        title,
+        artist,
         available: { chordGrid: false, lyrics: false, score: false },
         refs: {},
       };
       agg.set(key, cand);
     }
     cand.available[p.type] = true;
-    cand.refs[p.type] = { source: p.source, ref: p.ref };
+    // Première source d'un type gagne : le corpus iReal (poussé en tête) prime
+    // sur les scrapers, et parmi les scrapers l'ordre de scrapeSearch décide.
+    if (!cand.refs[p.type]) cand.refs[p.type] = { source: p.source, ref: p.ref };
   }
   return { query: q, results: [...agg.values()] };
 }
@@ -199,6 +209,13 @@ const FETCHERS = {
   },
   "lyrics:lrclib": { fn: lrclibLyrics, format: "chordpro" },
   "score:thesession": { fn: tsAbc, format: "abc" },
+  // Grilles scrapées en live (Ultimate Guitar, e-chords, forum iReal).
+  ...Object.fromEntries(
+    SCRAPE_SOURCES.map((src) => [
+      `chordGrid:${src}`,
+      { fn: SCRAPE_FETCHERS[src], format: "chart-json" },
+    ])
+  ),
 };
 
 export default async (req) => {
@@ -210,7 +227,7 @@ export default async (req) => {
   if (path.endsWith("/health")) {
     return json({
       ok: true,
-      sources: ["irealpro", "lrclib", "thesession"],
+      sources: ["irealpro", ...SCRAPE_SOURCES, "lrclib", "thesession"],
       irealSongs: irealIndex.length,
     });
   }
