@@ -21,7 +21,13 @@ endif
 #   make web  RUBATO_API=https://autre-backend.example
 RUBATO_API ?= https://rubato1.netlify.app
 
-.PHONY: build shell create get analyze test web apk telegram apk-telegram clean doctor backend search
+# ── Backend Go (service `backend` du docker-compose) ─────────────────────────
+# Rien sur l'hôte : Go tourne dans le conteneur compose (image officielle Go).
+GOBACK  := docker compose run --rm backend
+GOBACKP := docker compose run --rm --service-ports backend
+
+.PHONY: build shell create get analyze test web apk telegram apk-telegram clean doctor backend search \
+	api-run api-test api-tidy
 
 ## build   : construire l'image Docker de dev
 build:
@@ -77,6 +83,18 @@ search:
 backend:
 	docker run --rm --init -e Q="$(q)" -e ROUTE="$(route)" \
 		-v "$(CURDIR)":/app -w /app $(NODE_IMAGE) node scripts/backend_cli.mjs
+
+## api-run : lancer le backend Go (go run) → http://localhost:8091/search
+api-run:
+	$(GOBACKP) go run .
+
+## api-test : lancer les tests Go
+api-test:
+	$(GOBACK) go test ./...
+
+## api-tidy : go mod tidy (met à jour go.mod/go.sum, garde les fichiers à ton UID)
+api-tidy:
+	$(GOBACK) sh -c 'go mod tidy && chown -R $(shell id -u):$(shell id -g) /app'
 
 ## shell   : ouvrir un shell dans le conteneur
 shell:

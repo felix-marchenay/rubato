@@ -22,6 +22,22 @@ services:
     stdin_open: true
     tty: true
 
+  # Backend Go (dossier backend/). Image officielle Go, source montée, `go run`.
+  # Pas de Dockerfile : rien à builder pour le dev.
+  backend:
+    image: golang:1.24-alpine
+    working_dir: /app
+    volumes:
+      - ./backend:/app
+      # Caches persistants (modules + build) entre les runs.
+      - go-mod-cache:/go/pkg/mod
+      - go-build-cache:/root/.cache/go-build
+    ports:
+      - "8091:8080" # 8080 pris, 8090 = web Flutter → 8091
+    command: go run .
+
 volumes:
   pub-cache:
   gradle-cache:
+  go-mod-cache:
+  go-build-cache:
