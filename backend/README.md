@@ -265,6 +265,26 @@ compte :
 make api-token     # affiche le jeton à copier dans les secrets GitHub
 ```
 
+Trois pièges sur ce secret, tous rendant le même `no access token available` :
+
+- il doit être un **Repository secret** (Settings → Secrets and variables →
+  Actions, onglet *Secrets*). Un *Environment* secret est invisible d'un job qui
+  ne déclare pas `environment:` — ce workflow n'en déclare pas ;
+- le nom doit être exactement `FLY_API_TOKEN` ;
+- la valeur est le jeton **entier**, `FlyV1 ` et son espace compris. C'est le
+  piège le plus fréquent : on ne copie que la partie `fm2_…`.
+
+Pour valider un jeton avant de le coller (sans volume monté, donc sans le
+`~/.fly` local qui masquerait le problème) :
+
+```bash
+docker run --rm -e HOME=/ -e FLY_API_TOKEN='FlyV1 fm2_…' \
+  flyio/flyctl:latest apps list
+```
+
+Le job commence de toute façon par vérifier que le secret est non vide et
+explique quoi corriger.
+
 À savoir : ce workflow **déploie**, il ne crée pas l'app — `make api-create` reste
 à faire une fois en local. Et un jeton dans les secrets GitHub donne le droit de
 déployer sur ton compte facturable : `fly tokens list` / `fly tokens revoke` pour

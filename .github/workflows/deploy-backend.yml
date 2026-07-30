@@ -37,7 +37,21 @@ jobs:
         working-directory: backend
 
     steps:
+      # Le checkout d'abord : les étapes `run` s'exécutent dans backend/ (cf.
+      # defaults ci-dessus), qui n'existe pas avant.
       - uses: actions/checkout@v4
+
+      # Puis le secret, avant les tests : sans lui, flyctl échouerait tout à la
+      # fin sur un « no access token available » qui ne dit pas où chercher.
+      - name: Vérifier le secret FLY_API_TOKEN
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          if [ -z "$FLY_API_TOKEN" ]; then
+            echo "::error::Secret FLY_API_TOKEN absent ou vide. À vérifier : (1) il existe dans Settings → Secrets and variables → Actions, onglet Secrets, en **Repository secret** — un Environment secret est invisible d'un job sans clé environment: ; (2) le nom est exactement FLY_API_TOKEN ; (3) la valeur est le jeton ENTIER rendu par 'make api-token', préfixe 'FlyV1 ' et espace compris."
+            exit 1
+          fi
+          echo "Secret présent (${#FLY_API_TOKEN} caractères)."
 
       # Les tests avant le déploiement : ils tournent hors-ligne (fixtures dans
       # testdata/, corpus embarqué, httptest) — aucun appel aux sources réelles,
