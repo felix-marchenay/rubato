@@ -1,10 +1,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Requis pour récupérer les paroles en ligne (LRCLIB). -->
+    <!-- Requis pour récupérer les paroles en ligne (LRCLIB) et interroger le
+         backend de recherche (RUBATO_API). -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- usesCleartextTraffic : le backend Go tourne en HTTP simple sur le réseau
+         local (http://<ip-lan>:8091) ; sans ceci, Android bloque l'appel. -->
     <application
         android:label="Rubato"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true">
         <activity
             android:name=".MainActivity"
             android:exported="true"

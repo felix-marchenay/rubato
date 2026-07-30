@@ -2,6 +2,7 @@ package sources
 
 import (
 	"os"
+	"strings"
 	"testing"
 )
 
@@ -65,17 +66,72 @@ func TestContentSlug(t *testing.T) {
 	}
 }
 
-// TestParseEchordsContent vérifie l'extraction de la feuille (chord.MUSICA).
-// Fixture synthétique volontairement (pas de vraies paroles → pas de souci de
-// droits d'auteur) : on ne teste que le parsing.
+// TestParseEchordsContent vérifie l'extraction de la feuille (chord.MUSICA) et
+// de la tonalité. Fixture synthétique volontairement (pas de vraies paroles →
+// pas de souci de droits d'auteur) : on ne teste que le parsing.
 func TestParseEchordsContent(t *testing.T) {
-	body := []byte(`{"id":1,"title":"Demo","chord":{"MUSICA":"[C] la la [G] la","ACORDES_PADROES":"C,G"}}`)
+	body := []byte(`{"id":1,"title":"Demo","default_key":"C",` +
+		`"chord":{"MUSICA":"[C] la la [G] la","ACORDES_PADROES":"C,G"}}`)
 
-	content, err := parseEchordsContent(body)
+	sheet, key, err := parseEchordsContent(body)
 	if err != nil {
 		t.Fatalf("parseEchordsContent : %v", err)
 	}
-	if content != "[C] la la [G] la" {
-		t.Errorf("content = %q, want %q", content, "[C] la la [G] la")
+	if sheet != "[C] la la [G] la" {
+		t.Errorf("sheet = %q, want %q", sheet, "[C] la la [G] la")
+	}
+	if key != "C" {
+		t.Errorf("key = %q, want %q", key, "C")
+	}
+}
+
+// TestDedupEchordsSongs : la recherche d'e-chords renvoie régulièrement deux
+// fois le même morceau — inutile de payer deux fetchs de contenu.
+func TestDedupEchordsSongs(t *testing.T) {
+	got := dedupEchordsSongs([]echordsSong{{ID: 1}, {ID: 2}, {ID: 1}})
+	if len(got) != 2 || got[0].ID != 1 || got[1].ID != 2 {
+		t.Errorf("dedupEchordsSongs = %+v, want [1 2]", got)
+	}
+}
+
+// TestEchordsChart : conversion d'une feuille e-chords vers le format pivot.
+// Les libellés viennent des balises (<i>…</i>, pseudo-balises maison) et
+// **seuls les accords sont retenus** : la ligne de paroles synthétique de la
+// fixture ne doit apparaître nulle part dans la grille.
+func TestEchordsChart(t *testing.T) {
+	sheet := "<i>Intro</i> [C] [G] [Am] [F]\r\n\r\n<V1>\r\n" +
+		"   [C]              [G]\r\nblabla bla blabla\r\n   [Am]      [F]\r\nencore du blabla\r\n</V1>"
+
+	c, ok := echordsChart(sheet, "C")
+	if !ok {
+		t.Fatal("echordsChart = ok false, want true")
+	}
+	if c.Key != "C" || c.Time != "4/4" {
+		t.Errorf("key/time = %q/%q, want C/4/4", c.Key, c.Time)
+	}
+	if len(c.Sections) != 2 {
+		t.Fatalf("nb sections = %d, want 2 (%+v)", len(c.Sections), c.Sections)
+	}
+	if c.Sections[0].Label != "Intro" || len(c.Sections[0].Bars) != 4 {
+		t.Errorf("section 0 = %+v, want Intro avec 4 mesures", c.Sections[0])
+	}
+	if c.Sections[1].Label != "V1" || len(c.Sections[1].Bars) != 4 {
+		t.Errorf("section 1 = %+v, want V1 avec 4 mesures", c.Sections[1])
+	}
+
+	js, err := c.JSON()
+	if err != nil {
+		t.Fatalf("JSON : %v", err)
+	}
+	if strings.Contains(js, "blabla") {
+		t.Errorf("la grille contient des paroles : %s", js)
+	}
+}
+
+// Une feuille sans aucun accord ne doit pas produire de grille (l'app n'en
+// ferait rien) : ok=false, et la source ignore le morceau.
+func TestEchordsChartWithoutChords(t *testing.T) {
+	if _, ok := echordsChart("juste du texte\nsans accords\n", ""); ok {
+		t.Error("echordsChart = ok true, want false")
 	}
 }

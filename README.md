@@ -37,14 +37,22 @@ Pas de sections/reprises, transposition, auto-scroll ni édition pour l'instant.
 - Cible : **Android** (phone + tablette), responsive
 - Stockage **local** uniquement pour la v0
 - **Dev 100% conteneurisé** (Docker) : rien installé sur l'hôte — voir [`docs/DOCKER.md`](docs/DOCKER.md)
+- **Backend de recherche en ligne en Go** (stdlib pure, zéro dépendance) —
+  voir [`backend/README.md`](backend/README.md)
 
 ## Démarrage rapide (dev)
 
 ```bash
 make build     # construit l'image Flutter (une fois, plusieurs Go)
 make get       # dépendances
-make web       # lance l'app sur http://localhost:8080
+make web       # lance l'app sur http://localhost:8090
+make api-run   # backend de recherche en ligne (Go) sur http://localhost:8091
 ```
+
+Pour utiliser l'app sur un téléphone hors du réseau local, le backend se déploie
+sur Fly.io (`make api-deploy`, puis
+`make apk RUBATO_API=https://<app>.fly.dev`) — voir
+[`backend/README.md`](backend/README.md).
 
 ## Architecture du code (`lib/src/`)
 

@@ -1,14 +1,23 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../data/library_repository.dart';
 import '../data/remote_catalog_service.dart';
+import '../data/search_cache.dart';
 import '../domain/song.dart';
 import 'chart_screen.dart';
 import 'theme.dart';
 
-/// Recherche de morceaux en ligne via le proxy d'agrégation. Les résultats
-/// affichent les représentations disponibles (Grille · Paroles · Mélodie) ;
-/// « Ajouter » récupère les contenus et les conserve dans la bibliothèque perso.
+/// Recherche de morceaux en ligne via le backend Go.
+///
+/// Deux principes :
+///  - **au compte-gouttes** : le backend diffuse ses résultats en flux (SSE), on
+///    affiche chaque morceau dès qu'il arrive plutôt que d'attendre la source la
+///    plus lente ;
+///  - **une seule fois** : une requête déjà faite est relue dans le cache local
+///    ([SearchCache]) — instantané, hors-ligne, et sans re-solliciter les sites.
+///    Le bouton « actualiser » force un nouvel appel.
 class OnlineSearchScreen extends StatefulWidget {
   final LibraryRepository repository;
 
@@ -20,43 +29,108 @@ class OnlineSearchScreen extends StatefulWidget {
 
 class _OnlineSearchScreenState extends State<OnlineSearchScreen> {
   static const _remote = RemoteCatalogService();
-  final _controller = TextEditingController();
+  static const _cache = SearchCache();
 
-  bool _loading = false;
+  final _controller = TextEditingController();
+  StreamSubscription<SearchEvent>? _subscription;
+
+  /// Requête affichée (celle des résultats à l'écran, pas celle du champ).
+  String _query = '';
+  bool _streaming = false;
   bool _searched = false;
+  bool _fromCache = false;
   String? _error;
   List<RemoteSong> _results = const [];
+  final List<SourceProgress> _progress = [];
+  List<String> _recent = const [];
   final Set<String> _adding = {};
 
   @override
+  void initState() {
+    super.initState();
+    _loadRecent();
+  }
+
+  @override
   void dispose() {
+    _subscription?.cancel(); // coupe le flux SSE si on quitte l'écran
     _controller.dispose();
     super.dispose();
   }
 
-  Future<void> _search() async {
-    final q = _controller.text.trim();
+  Future<void> _loadRecent() async {
+    final recent = await _cache.recentQueries();
+    if (!mounted) return;
+    setState(() => _recent = recent.take(8).toList());
+  }
+
+  /// Lance une recherche. Par défaut on sert le cache s'il a la réponse ;
+  /// `refresh: true` l'oublie et repart du backend.
+  Future<void> _search({bool refresh = false, String? query}) async {
+    final q = (query ?? _controller.text).trim();
     if (q.length < 2) return;
+    if (query != null) _controller.text = q;
     FocusScope.of(context).unfocus();
-    setState(() {
-      _loading = true;
-      _error = null;
-      _searched = true;
-    });
-    try {
-      final results = await _remote.search(q);
-      if (!mounted) return;
-      setState(() {
-        _results = results;
-        _loading = false;
-      });
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _error = '$e';
-        _loading = false;
-      });
+
+    await _subscription?.cancel();
+    _subscription = null;
+
+    if (refresh) {
+      await _cache.forget(q);
+    } else {
+      final cached = await _cache.read(q);
+      if (cached != null) {
+        if (!mounted) return;
+        setState(() {
+          _query = q;
+          _results = cached;
+          _progress.clear();
+          _fromCache = true;
+          _streaming = false;
+          _searched = true;
+          _error = null;
+        });
+        return;
+      }
     }
+
+    if (!mounted) return;
+    setState(() {
+      _query = q;
+      _results = const [];
+      _progress.clear();
+      _fromCache = false;
+      _streaming = true;
+      _searched = true;
+      _error = null;
+    });
+
+    _subscription = _remote.searchStream(q).listen(
+      (event) {
+        if (!mounted) return;
+        switch (event) {
+          case SearchSongs(:final songs):
+            setState(() => _results = songs);
+          case SearchSourceDone(:final progress):
+            setState(() => _progress.add(progress));
+          case SearchDone():
+            setState(() => _streaming = false);
+            // Le flux est complet : c'est maintenant qu'on peut le mettre en
+            // cache (une recherche partielle n'aurait aucun intérêt).
+            _cache.write(q, _results).then((_) => _loadRecent());
+        }
+      },
+      onError: (Object e) {
+        if (!mounted) return;
+        setState(() {
+          _error = '$e';
+          _streaming = false;
+        });
+      },
+      onDone: () {
+        if (mounted && _streaming) setState(() => _streaming = false);
+      },
+    );
   }
 
   Future<void> _add(RemoteSong song) async {
@@ -65,16 +139,16 @@ class _OnlineSearchScreenState extends State<OnlineSearchScreen> {
     String? failure;
 
     for (final type in song.available) {
-      final ref = song.refs[type];
-      if (ref == null) continue;
+      final remote = song.contents[type];
+      if (remote == null) continue;
       try {
-        final content = await _remote.fetchRepresentation(ref, type);
+        // Le contenu est déjà là (flux ou cache) : l'ajout est purement local.
         final ok = await widget.repository.addRepresentation(
           songId: song.id,
           title: song.title,
           artist: song.artist,
           type: type,
-          content: content,
+          content: remote.content,
         );
         if (ok) {
           added.add(type);
@@ -125,6 +199,14 @@ class _OnlineSearchScreenState extends State<OnlineSearchScreen> {
           'Recherche en ligne',
           style: RubatoType.serif(size: 19, weight: FontWeight.w600, color: p.ink),
         ),
+        actions: [
+          if (_searched && !_streaming)
+            IconButton(
+              onPressed: () => _search(refresh: true, query: _query),
+              icon: const Icon(Icons.refresh, size: 20),
+              tooltip: 'Relancer la recherche (ignorer le cache)',
+            ),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
           child: Container(height: 1, color: p.line),
@@ -149,6 +231,12 @@ class _OnlineSearchScreenState extends State<OnlineSearchScreen> {
               ),
             ),
           ),
+          if (_streaming || _fromCache) _StatusBar(
+            streaming: _streaming,
+            fromCache: _fromCache,
+            progress: _progress,
+            onRefresh: () => _search(refresh: true, query: _query),
+          ),
           Expanded(child: _body(p)),
         ],
       ),
@@ -156,27 +244,21 @@ class _OnlineSearchScreenState extends State<OnlineSearchScreen> {
   }
 
   Widget _body(RubatoPalette p) {
-    if (_loading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    if (_error != null) {
+    // Pendant le flux, on affiche déjà ce qui est arrivé : le vide n'apparaît
+    // qu'au tout début.
+    if (_error != null && _results.isEmpty) {
       return _Message(
         icon: Icons.cloud_off_outlined,
         text: 'Recherche indisponible.\n$_error',
       );
     }
     if (!_searched) {
-      return const _Message(
-        icon: Icons.travel_explore,
-        text: 'Cherche un morceau : grilles d\'accords, paroles (LRCLIB) et '
-            'mélodies du domaine public (The Session).',
-      );
+      return _Welcome(recent: _recent, onPick: (q) => _search(query: q));
     }
     if (_results.isEmpty) {
-      return const _Message(
-        icon: Icons.search_off,
-        text: 'Aucun résultat.',
-      );
+      return _streaming
+          ? const Center(child: CircularProgressIndicator())
+          : const _Message(icon: Icons.search_off, text: 'Aucun résultat.');
     }
     return ListView.builder(
       padding: const EdgeInsets.only(bottom: 24),
@@ -185,6 +267,134 @@ class _OnlineSearchScreenState extends State<OnlineSearchScreen> {
         song: _results[i],
         adding: _adding.contains(_results[i].id),
         onAdd: () => _add(_results[i]),
+      ),
+    );
+  }
+}
+
+/// Bandeau d'état sous la barre de recherche : avancement des sources pendant le
+/// flux, ou rappel que les résultats viennent du cache.
+class _StatusBar extends StatelessWidget {
+  final bool streaming;
+  final bool fromCache;
+  final List<SourceProgress> progress;
+  final VoidCallback onRefresh;
+
+  const _StatusBar({
+    required this.streaming,
+    required this.fromCache,
+    required this.progress,
+    required this.onRefresh,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    final style = TextStyle(fontSize: 11.5, color: p.inkMuted);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (streaming) ...[
+            SizedBox(
+              height: 2,
+              child: LinearProgressIndicator(
+                backgroundColor: p.line,
+                color: p.brass,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 10,
+              runSpacing: 4,
+              children: [
+                Text('Sources…', style: style),
+                for (final s in progress)
+                  Text(
+                    s.failed
+                        ? '${s.source} ✕'
+                        : '${s.source} ${s.count > 0 ? '· ${s.count}' : '· —'} (${s.ms} ms)',
+                    style: style.copyWith(
+                      color: s.failed ? p.inkMuted : p.onBrassTint,
+                    ),
+                  ),
+              ],
+            ),
+          ] else if (fromCache) ...[
+            Row(
+              children: [
+                Icon(Icons.offline_bolt_outlined, size: 14, color: p.inkMuted),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text('Résultats déjà connus (cache local).', style: style),
+                ),
+                TextButton(
+                  onPressed: onRefresh,
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    minimumSize: const Size(0, 28),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: const Text('Actualiser', style: TextStyle(fontSize: 12)),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// Écran d'accueil de la recherche : ce qu'on peut trouver, et les recherches
+/// déjà en cache (un clic = résultat instantané, sans réseau).
+class _Welcome extends StatelessWidget {
+  final List<String> recent;
+  final ValueChanged<String> onPick;
+
+  const _Welcome({required this.recent, required this.onPick});
+
+  @override
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.travel_explore, size: 40, color: p.line),
+          const SizedBox(height: 16),
+          Text(
+            'Cherche un morceau : grilles d\'accords (corpus iReal, e-chords, '
+            'Cifra Club, Ultimate Guitar) et paroles (LRCLIB).',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: p.inkMuted, height: 1.4),
+          ),
+          if (recent.isNotEmpty) ...[
+            const SizedBox(height: 28),
+            Text(
+              'Déjà cherché',
+              style: RubatoType.serif(
+                  size: 13, weight: FontWeight.w600, color: p.inkMuted),
+            ),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              alignment: WrapAlignment.center,
+              children: [
+                for (final q in recent)
+                  ActionChip(
+                    label: Text(q, style: const TextStyle(fontSize: 12)),
+                    onPressed: () => onPick(q),
+                  ),
+              ],
+            ),
+          ],
+        ],
       ),
     );
   }
@@ -243,8 +453,11 @@ class _ResultTile extends StatelessWidget {
                   spacing: 6,
                   runSpacing: 6,
                   children: [
+                    // La source est affichée avec la pastille : deux grilles du
+                    // même morceau viennent parfois de sites différents.
                     for (final t in _order)
-                      if (song.has(t)) _Pill(label: _labels[t]!),
+                      if (song.has(t))
+                        _Pill(label: '${_labels[t]!} · ${song.sourceOf(t)}'),
                   ],
                 ),
               ],

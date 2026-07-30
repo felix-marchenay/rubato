@@ -13,7 +13,10 @@ Rien n'est installé sur l'hôte : Flutter tourne dans le conteneur
 make web        # serveur web (voir port ci-dessous)
 make apk        # APK Android release
 make apk-telegram   # build APK + envoi Telegram (config dans .env)
-make analyze / make test    # ⚠️ demander avant de lancer (règle utilisateur)
+make api-run    # backend Go de recherche → http://localhost:8091
+make search creep radiohead   # recherche via le backend Go, résumé lisible
+make api-deploy # déployer le backend sur Fly.io (cf. backend/README.md)
+make analyze / make test / make api-test   # ⚠️ demander avant de lancer (règle utilisateur)
 ```
 
 - **Lancement web réel** (le port hôte 8080 est pris par un autre projet) :
@@ -39,16 +42,61 @@ Tout est centralisé dans `lib/src/ui/theme.dart` (`RubatoPalette`, `RubatoType`
 - `lib/src/codec/` : (dé)sérialisation découplée du domaine —
   `json_chord_chart_codec.dart`, `chord_parser.dart` (vocabulaire iReal :
   `-`=min, `^`=maj7, `h`=ø, `o`=°), `chordpro_codec.dart`.
-- `lib/src/data/` : `catalog_repository.dart` (charge assets), `lrclib_service.dart`
-  (paroles en ligne), `lyrics_store.dart` (+ `_io`/`_web`/`_stub`, persistance locale).
+- `lib/src/data/` : `catalog_repository.dart` (charge assets), `library_repository.dart`
+  (assets + biblio perso), `lrclib_service.dart` (paroles en ligne, appel direct),
+  `remote_catalog_service.dart` (client du backend Go : flux SSE + repli batch),
+  `sse.dart` + `sse_transport.dart` (+ `_io`/`_web`/`_stub`) pour le streaming,
+  `search_cache.dart` sur `local_db.dart` (+ `_io`/`_web`/`_stub`) pour le cache,
+  `key_value_store.dart` (contrat du stockage), `lyrics_store.dart` /
+  `user_library_store.dart` (+ `_io`/`_web`/`_stub`, persistance locale).
 - `lib/src/ui/` : `library_screen.dart`, `chart_screen.dart` (sélecteur 3 vues
-  **Grille · Paroles · Mélodie**), `widgets/` (`chord_grid_view`, `lyric_sheet_view`,
-  `lyrics_pane`, `score_view`, `meta_chip`).
+  **Grille · Paroles · Mélodie**), `online_search_screen.dart` (recherche en ligne),
+  `widgets/` (`chord_grid_view`, `lyric_sheet_view`, `lyrics_pane`, `score_view`,
+  `meta_chip`).
+- `backend/` : **backend Go** de recherche en ligne (stdlib pure, zéro dépendance).
+  Voir [`backend/README.md`](backend/README.md).
 
 ### Pièges connus
 - Dans un `SingleChildScrollView` vertical, un `Row` avec
   `CrossAxisAlignment.stretch` doit être enveloppé d'`IntrinsicHeight` (sinon
   hauteur infinie → écran blanc). Cf. `_BarRow`.
+
+## Recherche en ligne : backend Go + flux + cache
+
+Le backend est en **Go** (`backend/`) et a **remplacé** l'ancienne fonction
+Netlify en Node (supprimée : plus de `netlify/`, plus de `scripts/backend_cli.mjs`).
+Détails complets dans [`backend/README.md`](backend/README.md) ; l'essentiel :
+
+- **Endpoints** : `GET /health`, `GET /search/stream?q=…` (**SSE**, ce que l'app
+  utilise), `GET /search?q=…` (même recherche d'un bloc, pour curl/CLI et comme
+  repli). **Pas de `/representation`** : le contenu est **embarqué dans les
+  résultats** (`{title,artist,source,content}` au format pivot), un seul
+  aller-retour.
+- **Sources** (ordre de priorité) : corpus **iReal Pro embarqué** (go:embed,
+  ~1 700 standards, instantané, vraies mesures), **e-chords**, **Cifra Club**,
+  **Ultimate Guitar** pour les grilles ; **LRCLIB** pour les paroles. Une source =
+  un fichier dans `backend/search/sources/`. Non portée : The Session (mélodies).
+- Les sources de grilles renvoient accords **+ paroles** ; le backend n'extrait
+  que l'harmonie (package `chart`) — aucune parole ne sort de ces sources.
+- **Flux côté app** : `RemoteCatalogService.searchStream()` rend des `SearchEvent`
+  (`SearchSongs` / `SearchSourceDone` / `SearchDone`) et l'écran affiche au
+  compte-gouttes. Transport SSE par import conditionnel : `EventSource` sur le
+  web, réponse HTTP lue en flux (`Client.send`) sur natif. ⚠️ `EventSource`
+  **reconnecte tout seul** : il faut la fermer sur `done`.
+- **Cache local** (`search_cache.dart`) : une requête déjà faite est relue en
+  local (contenus compris) → instantané, hors-ligne, et le backend n'est pas
+  re-sollicité. 7 jours de validité, 30 requêtes gardées, bouton « actualiser »
+  pour forcer le réseau. Les requêtes en cache sont proposées sur l'écran vide.
+- `RUBATO_API` pointe par défaut sur `http://localhost:8091` (le backend local).
+  Pour l'APK, `localhost` = le téléphone, donc viser l'IP LAN
+  (`make apk RUBATO_API=http://<ip-lan>:8091`, même WiFi) ou le **backend
+  déployé** (`make apk RUBATO_API=https://<app>.fly.dev`, marche partout).
+- **Déploiement** : `backend/Dockerfile` + `backend/fly.toml` → **Fly.io**
+  (Netlify n'exécute pas de Go, et il faut un conteneur pour avoir `curl`).
+  `make api-login` / `api-create` une fois, puis `make api-deploy` ; `api-status`,
+  `api-logs`, `api-url` pour vérifier, `api-image-run` pour tester l'image de prod
+  en local. Machine en veille automatique (démarrage à froid ~1 s). Détails,
+  coûts et limites : [`backend/README.md`](backend/README.md).
 
 ## Représentations & contenu
 
@@ -78,6 +126,9 @@ LRCLIB) — c'est lui la source.
 - `import_irealpro.py` : convertit `irealb://…` → JSON Rubato (dé-brouillage type
   pyRealParser), fusionne dans `catalog.json` en conservant paroles/mélodie
   existantes. Reprises `{ }` non dépliées. Usage : `python3 scripts/import_irealpro.py <fichier> [--dry-run] [--tags a,b]`.
+- `build_ireal_corpus.py` : construit le corpus iReal Pro pré-parsé
+  (`backend/search/sources/data/`), **embarqué dans le binaire Go** (go:embed) et
+  servi par la source `irealpro`. Relancer le script suffit à le rafraîchir.
 - `send-telegram.sh` : envoie l'APK sur Telegram (`.env` = `TELEGRAM_BOT_TOKEN`,
   `TELEGRAM_CHAT_ID`, git-ignoré).
 - `make_branding.py` : génère icône + splash (`assets/branding/`, monogramme « R »

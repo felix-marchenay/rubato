@@ -3,13 +3,14 @@
 
 Récupère des threads « méga-playlist » du forum iReal Pro (un seul lien
 `irealb://` = des centaines de morceaux), parse via le parseur déjà en place
-(`import_irealpro.parse_playlist`) et écrit deux fichiers consommés par la
-Netlify Function :
+(`import_irealpro.parse_playlist`) et écrit deux fichiers :
 
-  netlify/functions/data/ireal-index.json   [{id,title,artist}]   (recherche)
-  netlify/functions/data/ireal-charts.json   {id: {key,time,sections}}
+  backend/search/sources/data/ireal-index.json    [{id,title,artist}]  (recherche)
+  backend/search/sources/data/ireal-charts.json   {id: {key,time,sections}}
 
-Relancer ce script + redéployer pour rafraîchir le corpus.
+Ces deux fichiers sont **embarqués dans le binaire Go** (go:embed) par la source
+`backend/search/sources/irealcorpus.go` : relancer ce script suffit à rafraîchir
+le corpus, le backend le reprendra au prochain démarrage.
 Usage : python3 scripts/build_ireal_corpus.py
 """
 import html
@@ -23,7 +24,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from import_irealpro import parse_playlist, slugify  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUT_DIR = os.path.join(ROOT, "netlify", "functions", "data")
+OUT_DIR = os.path.join(ROOT, "backend", "search", "sources", "data")
 UA = ("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/125.0 Safari/537.36")
 

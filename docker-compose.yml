@@ -22,10 +22,15 @@ services:
     stdin_open: true
     tty: true
 
-  # Backend Go (dossier backend/). Image officielle Go, source montée, `go run`.
-  # Pas de Dockerfile : rien à builder pour le dev.
+  # Backend Go (dossier backend/). Image officielle Go, source montée, `go run` :
+  # rien à builder pour le dev. `backend/Dockerfile` existe mais ne sert qu'au
+  # déploiement (Fly.io, cf. backend/README.md) — ne pas l'utiliser ici, il
+  # compile un binaire figé.
+  # Variante Debian (et non -alpine) car elle embarque `curl` : le searcher
+  # e-chords passe par curl pour contourner le challenge Cloudflare (le
+  # fingerprint TLS de la stdlib Go est bloqué, celui de curl passe).
   backend:
-    image: golang:1.24-alpine
+    image: golang:1.24
     working_dir: /app
     volumes:
       - ./backend:/app

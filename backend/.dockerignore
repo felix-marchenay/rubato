@@ -1,0 +1,5 @@
+# Contexte de build minimal (le déploiement Fly envoie ce contexte au builder
+# distant). ⚠️ NE PAS exclure search/sources/data/ : ce corpus est embarqué dans
+# le binaire par go:embed, sans lui la source `irealpro` ne compile pas.
+*_test.go
+**/testdata/

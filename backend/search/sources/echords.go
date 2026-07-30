@@ -5,11 +5,12 @@ package sources
 import (
 	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
+	"log"
 	"net/url"
-	"time"
+	"regexp"
+	"strings"
 
+	"rubato/chart"
 	"rubato/search"
 )
 
@@ -23,37 +24,42 @@ const echordsSearchURL = "https://www.e-chords.com/api/search"
 // echordsSongURL : gabarit de l'endpoint contenu. %d = ID_MUSICA (numérique,
 // fourni uniquement par la recherche), %s = slug d'instrument (chords, ukulele…).
 // Renvoie le JSON complet du morceau, dont chord.MUSICA (la feuille : accords
-// entre crochets + paroles).
+// entre crochets + paroles) et default_key (la tonalité).
 const echordsSongURL = "https://www.e-chords.com/api/song/%d/%s"
 
-// echordsMaxContentFetch : nombre max de morceaux dont on récupère le contenu.
-// Chaque contenu = un appel HTTP supplémentaire → on plafonne pour rester léger.
-const echordsMaxContentFetch = 3
+// echordsMaxSongs : nombre max de morceaux traités. Chaque morceau = un appel
+// HTTP de plus (on récupère la grille tout de suite, pas à la demande) → on
+// plafonne pour que la recherche reste rapide.
+const echordsMaxSongs = 3
 
-// EchordsSearcher interroge l'API d'e-chords.
-type EchordsSearcher struct {
-	// HTTPClient est injectable (tests, timeouts). Nil → client par défaut.
-	HTTPClient *http.Client
-}
+// EchordsSearcher interroge l'API d'e-chords et convertit ses feuilles au
+// format pivot des grilles (voir package chart). Les appels réseau passent par
+// curlGet (cf. fetch.go pour le pourquoi).
+type EchordsSearcher struct{}
 
 // Vérification à la compilation qu'EchordsSearcher satisfait bien l'interface.
 var _ search.Searcher = (*EchordsSearcher)(nil)
 
+// Name identifie la source (logs, /health).
+func (EchordsSearcher) Name() string { return sourceEchords }
+
 // Search interroge e-chords en deux temps : d'abord la recherche (métadonnées),
-// puis, pour les premiers résultats, un fetch du contenu de chaque morceau. Le
-// parsing (parseEchordsSearch/parseEchordsContent) est séparé des appels HTTP
-// pour rester testable sans réseau.
+// puis, pour les premiers résultats, le contenu de chaque morceau converti en
+// grille. Le parsing (parseEchordsSearch/parseEchordsContent/echordsChart) est
+// séparé des appels réseau pour rester testable sans réseau.
+//
+// e-chords ne fournit que des grilles : les paroles de ses feuilles ne sortent
+// jamais du backend (règle projet — droit d'auteur), seule l'harmonie est
+// conservée.
 func (e EchordsSearcher) Search(q search.Query) (grids []search.ChordGridResult, lyrics []search.LyricsResult, melodies []search.MelodyResult, err error) {
 	params := url.Values{}
 	params.Set("q", q.Text)
 	params.Add("only[]", "songs")
-	params.Set("songs_take", fmt.Sprintf("%d", echordsMaxContentFetch))
+	params.Set("songs_take", fmt.Sprintf("%d", echordsMaxSongs))
 
-	req, err := e.newRequest(echordsSearchURL + "?" + params.Encode())
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("echords: requête : %w", err)
-	}
-	body, err := e.do(req)
+	body, err := curlGet(echordsSearchURL+"?"+params.Encode(),
+		"Accept: application/json, text/plain, */*",
+		"Referer: https://www.e-chords.com/")
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("echords: recherche : %w", err)
 	}
@@ -62,24 +68,26 @@ func (e EchordsSearcher) Search(q search.Query) (grids []search.ChordGridResult,
 	if err != nil {
 		return nil, nil, nil, err
 	}
-
-	// On ne récupère le contenu que des premiers résultats (un appel chacun).
-	if len(songs) > echordsMaxContentFetch {
-		songs = songs[:echordsMaxContentFetch]
+	songs = dedupEchordsSongs(songs)
+	if len(songs) > echordsMaxSongs {
+		songs = songs[:echordsMaxSongs]
 	}
 
 	for _, s := range songs {
-		g := search.ChordGridResult{
-			Title:  s.Title,
-			Artist: s.Artist,
-			Source: sourceEchords,
+		// Best-effort : un morceau dont le contenu échoue (ou dont la feuille ne
+		// donne aucune mesure exploitable) est ignoré — on ne renvoie pas de
+		// résultat sans grille, l'app n'en ferait rien.
+		content, cerr := e.fetchChart(s)
+		if cerr != nil {
+			log.Printf("echords: %q ignoré : %v", s.Title, cerr)
+			continue
 		}
-		// Best-effort : si le fetch du contenu échoue, on garde quand même la
-		// grille (métadonnées) plutôt que de faire échouer toute la recherche.
-		if content, cerr := e.fetchContent(s); cerr == nil {
-			g.Content = content
-		}
-		grids = append(grids, g)
+		grids = append(grids, search.ChordGridResult{
+			Title:   decodeEntities(s.Title),
+			Artist:  decodeEntities(s.Artist),
+			Source:  sourceEchords,
+			Content: content,
+		})
 	}
 	return grids, nil, nil, nil
 }
@@ -95,7 +103,7 @@ type echordsSearchResponse struct {
 
 // echordsSong : champs utiles d'un hit « song » (noms d'origine en portugais).
 type echordsSong struct {
-	ID          int                 `json:"ID_MUSICA"`   // requis pour l'URL du contenu
+	ID          int                 `json:"ID_MUSICA"` // requis pour l'URL du contenu
 	Title       string              `json:"TITULO"`
 	Artist      string              `json:"ARTISTA"`
 	ArtistSlug  string              `json:"COD_ARTISTA"` // page web (pas l'API)
@@ -134,70 +142,135 @@ func parseEchordsSearch(body []byte) ([]echordsSong, error) {
 	return resp.Songs.Hits, nil
 }
 
+// dedupEchordsSongs supprime les doublons d'ID : la recherche d'e-chords renvoie
+// régulièrement deux fois le même morceau, ce qui coûterait deux fetchs pour
+// rien.
+func dedupEchordsSongs(songs []echordsSong) []echordsSong {
+	seen := make(map[int]bool, len(songs))
+	out := make([]echordsSong, 0, len(songs))
+	for _, s := range songs {
+		if seen[s.ID] {
+			continue
+		}
+		seen[s.ID] = true
+		out = append(out, s)
+	}
+	return out
+}
+
 // echordsSongContent : sous-ensemble exploité de /api/song/{id}/{slug}. Le champ
-// chord.MUSICA porte la feuille complète (accords entre crochets + paroles).
+// chord.MUSICA porte la feuille complète (accords entre crochets + paroles) ;
+// default_key donne la tonalité affichée par e-chords.
 type echordsSongContent struct {
-	Chord struct {
+	DefaultKey string `json:"default_key"`
+	Chord      struct {
 		Musica string `json:"MUSICA"`
 	} `json:"chord"`
 }
 
-// fetchContent récupère la feuille d'un morceau via /api/song/{id}/{slug}.
-func (e EchordsSearcher) fetchContent(s echordsSong) (string, error) {
+// fetchChart récupère la feuille d'un morceau via /api/song/{id}/{slug} et la
+// convertit en grille JSON (format pivot).
+func (e EchordsSearcher) fetchChart(s echordsSong) (string, error) {
 	slug := s.contentSlug()
 	if s.ID == 0 || slug == "" {
-		return "", fmt.Errorf("echords: identifiants de contenu manquants")
+		return "", fmt.Errorf("identifiants de contenu manquants")
 	}
-	req, err := e.newRequest(fmt.Sprintf(echordsSongURL, s.ID, slug))
+	body, err := curlGet(fmt.Sprintf(echordsSongURL, s.ID, slug),
+		"Accept: application/json, text/plain, */*",
+		"Referer: https://www.e-chords.com/")
+	if err != nil {
+		return "", fmt.Errorf("contenu %d/%s : %w", s.ID, slug, err)
+	}
+	sheet, key, err := parseEchordsContent(body)
 	if err != nil {
 		return "", err
 	}
-	body, err := e.do(req)
-	if err != nil {
-		return "", fmt.Errorf("echords: contenu %d/%s : %w", s.ID, slug, err)
+	c, ok := echordsChart(sheet, key)
+	if !ok {
+		return "", fmt.Errorf("aucune mesure exploitable dans la feuille")
 	}
-	return parseEchordsContent(body)
+	return c.JSON()
 }
 
-// parseEchordsContent extrait la feuille (chord.MUSICA) d'une réponse contenu.
-func parseEchordsContent(body []byte) (string, error) {
+// parseEchordsContent extrait la feuille (chord.MUSICA) et la tonalité d'une
+// réponse contenu.
+func parseEchordsContent(body []byte) (sheet, key string, err error) {
 	var c echordsSongContent
 	if err := json.Unmarshal(body, &c); err != nil {
-		return "", fmt.Errorf("echords: JSON contenu invalide : %w", err)
+		return "", "", fmt.Errorf("echords: JSON contenu invalide : %w", err)
 	}
-	return c.Chord.Musica, nil
+	return c.Chord.Musica, strings.TrimSpace(c.DefaultKey), nil
 }
 
-// newRequest construit une requête GET avec les en-têtes attendus par e-chords
-// (sinon 403). Un User-Agent navigateur suffit ; on ajoute le reste par prudence
-// (l'endpoint search est plus strict et les réclame).
-func (e EchordsSearcher) newRequest(u string) (*http.Request, error) {
-	req, err := http.NewRequest(http.MethodGet, u, nil)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Accept", "application/json, text/plain, */*")
-	req.Header.Set("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36")
-	req.Header.Set("X-Requested-With", "XMLHttpRequest")
-	req.Header.Set("Referer", "https://www.e-chords.com/")
-	return req, nil
+var (
+	// echordsBracketRe : un accord entre crochets dans la feuille e-chords.
+	echordsBracketRe = regexp.MustCompile(`\[([^\[\]\n]{1,12})\]`)
+	// echordsItalicRe : e-chords balise ses libellés de section en italique
+	// (« <i>Intro</i> », « (<i>Instrumental</i> 2x) »).
+	echordsItalicRe = regexp.MustCompile(`(?is)<i>(.*?)</i>`)
+	// echordsPseudoTagRe : et parfois avec des pseudo-balises maison (<V1>,
+	// <PONTE>, <R>…), ouvrantes ou fermantes.
+	echordsPseudoTagRe = regexp.MustCompile(`<\s*(/?)\s*([A-Za-z][^<>\s]{0,19})\s*>`)
+)
+
+// echordsHTMLTags : balises de mise en forme, qui ne sont pas des libellés.
+var echordsHTMLTags = map[string]bool{
+	"i": true, "b": true, "u": true, "em": true, "strong": true,
+	"span": true, "br": true, "p": true, "div": true, "small": true,
 }
 
-// do exécute la requête (client injecté ou client par défaut) et renvoie le
-// corps si le statut est 200.
-func (e EchordsSearcher) do(req *http.Request) ([]byte, error) {
-	client := e.HTTPClient
-	if client == nil {
-		client = &http.Client{Timeout: 15 * time.Second}
-	}
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("echords: appel : %w", err)
-	}
-	defer resp.Body.Close()
+// echordsSheet lit une feuille e-chords, c'est-à-dire du texte « accords entre
+// crochets AU-DESSUS des paroles » :
+//
+//	<i>Intro</i> [C] [G] [Am] [F]
+//	   [C]                    [G]
+//	Une ligne de paroles quelconque
+//
+// Implémente chart.TaggedSource : **seuls les accords sont retenus**, les
+// paroles ne quittent jamais le backend (règle projet — droit d'auteur).
+type echordsSheet struct{}
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("echords: statut inattendu %d", resp.StatusCode)
+var _ chart.TaggedSource = echordsSheet{}
+
+// Chords relève les accords entre crochets d'une ligne, dans l'ordre.
+func (echordsSheet) Chords(line string) []string {
+	var out []string
+	for _, m := range echordsBracketRe.FindAllStringSubmatch(line, -1) {
+		if tok := strings.TrimSpace(m[1]); chart.IsChord(tok) {
+			out = append(out, tok)
+		}
 	}
-	return io.ReadAll(resp.Body)
+	return out
+}
+
+// Label extrait un libellé de section : d'abord le texte en italique, sinon une
+// pseudo-balise ouvrante maison.
+func (echordsSheet) Label(line string) string {
+	if m := echordsItalicRe.FindStringSubmatch(line); m != nil {
+		// « <i>Intro:</i> » → « Intro » (la ponctuation de fin n'apporte rien au
+		// libellé affiché dans la grille).
+		if label := strings.Trim(stripTags(m[1]), " \t:-–—*."); label != "" {
+			return label
+		}
+	}
+	for _, m := range echordsPseudoTagRe.FindAllStringSubmatch(line, -1) {
+		closing, name := m[1] == "/", m[2]
+		if closing || echordsHTMLTags[strings.ToLower(name)] {
+			continue
+		}
+		return name
+	}
+	return ""
+}
+
+// Blank : seules les lignes réellement vides coupent une section (une ligne de
+// paroles est simplement ignorée — cf. chart.Builder.Break).
+func (echordsSheet) Blank(line string) bool {
+	return strings.TrimSpace(stripTags(line)) == ""
+}
+
+// echordsChart convertit une feuille e-chords en grille au format pivot.
+func echordsChart(sheet, key string) (chart.Chart, bool) {
+	sections := chart.SectionsFromTaggedLines(sheet, echordsSheet{})
+	return chart.New(sections, key, chart.DefaultTime)
 }

@@ -1,0 +1,47 @@
+# Déploiement Fly.io du backend Rubato. Voir la section « Déploiement » du
+# README : `make api-create` (une fois) puis `make api-deploy`.
+#
+# Le nom d'app est **global** chez Fly : si `rubato-backend` est déjà pris,
+# change-le ICI (le Makefile lit cette ligne) — l'URL sera https://<nom>.fly.dev
+app = 'rubato-backend'
+primary_region = 'cdg'
+
+[build]
+  dockerfile = 'Dockerfile'
+
+[env]
+  PORT = '8080'
+
+[http_service]
+  internal_port = 8080
+  # TLS obligatoire : l'app n'a plus besoin de trafic en clair une fois déployée.
+  force_https = true
+
+  # Mise en veille automatique : la machine s'arrête quand plus personne ne
+  # cherche, et le proxy Fly la redémarre à la requête suivante. C'est ce qui
+  # rend l'hébergement quasi gratuit (on paie à la seconde d'exécution), au prix
+  # d'un démarrage à froid de l'ordre de la seconde sur la première recherche.
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
+
+  # Garde-fou : l'API est publique et anonyme. Au-delà de 25 requêtes
+  # simultanées, le proxy refuse plutôt que de scraper (et de facturer) à
+  # l'infini. Une recherche = 1 requête SSE longue, donc la limite est vite
+  # atteinte si quelqu'un s'amuse.
+  [http_service.concurrency]
+    type = 'requests'
+    soft_limit = 10
+    hard_limit = 25
+
+# Pas de [[http_service.checks]] : un check périodique interrogerait la machine
+# en permanence, ce qui la garderait potentiellement éveillée. `fly deploy`
+# vérifie déjà que la version démarre, et `curl .../health` fait le reste.
+
+[[vm]]
+  size = 'shared-cpu-1x'
+  memory = '256mb'
+  # Un seul exemplaire : c'est un backend perso, et ça borne la facture.
+  cpu_kind = 'shared'
+  cpus = 1
