@@ -44,7 +44,7 @@ FLY := docker run --rm -it -e FLY_API_TOKEN -e HOME=/ \
 
 .PHONY: build shell create get analyze test web apk telegram apk-telegram clean doctor search \
 	api-run api-search api-test api-tidy api-image api-image-run \
-	api-login api-create api-deploy api-token api-status api-logs api-url
+	api-login api-create api-list api-deploy api-token api-status api-logs api-url
 
 ## build   : construire l'image Docker de dev
 build:
@@ -133,6 +133,12 @@ api-login:
 api-create:
 	@mkdir -p $(HOME)/.fly
 	$(FLY) apps create $(FLY_APP)
+
+## api-list : lister les apps Fly du compte
+##   À faire si api-create répond « Name has already been taken » : le nom peut
+##   être pris par un autre compte… ou déjà créé par toi.
+api-list:
+	$(FLY) apps list
 
 ## api-deploy : déployer le backend sur Fly.io (build distant, rien à installer)
 api-deploy:

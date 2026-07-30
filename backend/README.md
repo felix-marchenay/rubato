@@ -271,10 +271,13 @@ déployer sur ton compte facturable : `fly tokens list` / `fly tokens revoke` po
 faire le ménage.
 
 Le nom d'app vit dans un espace de noms **global à tout Fly** — c'est lui qui
-donne l'URL `https://<nom>.fly.dev`, donc les noms génériques sont souvent déjà
-pris par d'autres comptes (`Name has already been taken` sur `api-create`).
-Il se change dans `fly.toml` (ligne `app = …`), d'où le Makefile le relit ; le
-défaut Dart de `_apiBase` doit suivre, et `make apk` prévient s'il a divergé.
+donne l'URL `https://<nom>.fly.dev`. Un `api-create` peut donc échouer sur
+`Name has already been taken`, y compris quand c'est **soi-même** qui a déjà créé
+l'app : `make api-list` avant de conclure que le nom est pris par un inconnu.
+`api-create` n'est à faire qu'une fois ; ensuite, seul `api-deploy` compte.
+
+Le nom se change dans `fly.toml` (ligne `app = …`), d'où le Makefile le relit ;
+le défaut Dart de `_apiBase` doit suivre, et `make apk` prévient s'il a divergé.
 
 ### Ce qu'il faut savoir avant de déployer
 
