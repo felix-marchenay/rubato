@@ -15,13 +15,16 @@ endif
 endif
 
 # Backend de recherche en ligne = le backend Go (dossier backend/, cible
-# api-run), exposé sur le port hôte 8091. Surchargeable :
-#   make web RUBATO_API=http://192.168.1.20:8091
-# Pour l'APK, viser un backend joignable depuis le téléphone (« localhost »
-# désigne le téléphone) : soit l'IP LAN de cette machine, soit le backend
-# déployé sur Fly (cf. make api-deploy) :
-#   make apk RUBATO_API=https://rubato-backend.fly.dev
+# api-run), exposé sur le port hôte 8091. C'est le défaut pour `make web` : en
+# dev on veut le backend qu'on est en train de modifier.
 RUBATO_API ?= http://localhost:8091
+
+# Pour l'**APK**, le défaut est le backend **déployé sur Fly** : sur un
+# téléphone « localhost » désigne le téléphone, et l'IP LAN ne marche que sur le
+# même WiFi. Variable spécifique aux cibles → une surcharge en ligne de commande
+# gagne toujours, pour tester contre son backend local :
+#   make apk RUBATO_API=http://192.168.1.20:8091
+apk apk-telegram: RUBATO_API = https://$(FLY_APP).fly.dev
 
 # ── Backend Go (service `backend` du docker-compose) ─────────────────────────
 # Rien sur l'hôte : Go tourne dans le conteneur compose (image officielle Go).
@@ -41,7 +44,7 @@ FLY := docker run --rm -it -e FLY_API_TOKEN -e HOME=/ \
 
 .PHONY: build shell create get analyze test web apk telegram apk-telegram clean doctor search \
 	api-run api-search api-test api-tidy api-image api-image-run \
-	api-login api-create api-deploy api-status api-logs api-url
+	api-login api-create api-deploy api-token api-status api-logs api-url
 
 ## build   : construire l'image Docker de dev
 build:
@@ -133,6 +136,12 @@ api-create:
 api-deploy:
 	@mkdir -p $(HOME)/.fly
 	$(FLY) deploy --remote-only
+
+## api-token : créer un jeton de DÉPLOIEMENT (portée = cette app, pas le compte)
+##   À coller dans les secrets du repo GitHub sous le nom FLY_API_TOKEN : c'est
+##   ce que lit le workflow .github/workflows/deploy-backend.yml.
+api-token:
+	$(FLY) tokens create deploy --name "github-actions ($(FLY_APP))"
 
 ## api-status : état de l'app déployée (machines, version, veille)
 api-status:

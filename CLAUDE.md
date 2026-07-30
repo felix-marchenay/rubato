@@ -87,16 +87,23 @@ Détails complets dans [`backend/README.md`](backend/README.md) ; l'essentiel :
   local (contenus compris) → instantané, hors-ligne, et le backend n'est pas
   re-sollicité. 7 jours de validité, 30 requêtes gardées, bouton « actualiser »
   pour forcer le réseau. Les requêtes en cache sont proposées sur l'écran vide.
-- `RUBATO_API` pointe par défaut sur `http://localhost:8091` (le backend local).
-  Pour l'APK, `localhost` = le téléphone, donc viser l'IP LAN
-  (`make apk RUBATO_API=http://<ip-lan>:8091`, même WiFi) ou le **backend
-  déployé** (`make apk RUBATO_API=https://<app>.fly.dev`, marche partout).
+- `RUBATO_API` : **`make web` → `http://localhost:8091`** (le backend local, pour
+  développer contre le code qu'on modifie) mais **`make apk` → le backend déployé
+  `https://<app>.fly.dev`** (sur un téléphone, `localhost` = le téléphone, et
+  l'IP LAN ne marche que sur le même WiFi). Le défaut APK est une variable
+  spécifique à la cible dans le Makefile, dérivée du nom d'app de `fly.toml` ;
+  une surcharge en ligne de commande gagne toujours
+  (`make apk RUBATO_API=http://<ip-lan>:8091`). Le défaut Dart de `_apiBase`
+  pointe aussi sur Fly (à changer si le nom d'app change).
 - **Déploiement** : `backend/Dockerfile` + `backend/fly.toml` → **Fly.io**
   (Netlify n'exécute pas de Go, et il faut un conteneur pour avoir `curl`).
   `make api-login` / `api-create` une fois, puis `make api-deploy` ; `api-status`,
   `api-logs`, `api-url` pour vérifier, `api-image-run` pour tester l'image de prod
-  en local. Machine en veille automatique (démarrage à froid ~1 s). Détails,
-  coûts et limites : [`backend/README.md`](backend/README.md).
+  en local. Machine en veille automatique (démarrage à froid ~1 s).
+  **Un push sur `develop` touchant `backend/` redéploie tout seul**
+  (`.github/workflows/deploy-backend.yml`, secret `FLY_API_TOKEN`, jeton créé par
+  `make api-token`). Détails, coûts et limites :
+  [`backend/README.md`](backend/README.md).
 
 ## Représentations & contenu
 

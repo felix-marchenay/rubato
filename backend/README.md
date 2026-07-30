@@ -171,6 +171,7 @@ non `-alpine` dans le `docker-compose.yml`.
 | `make api-tidy`               | `go mod tidy`                                          |
 | `make api-image-run`          | builder + lancer l'**image de prod** en local          |
 | `make api-deploy`             | déployer sur Fly.io (cf. « Déploiement »)              |
+| `make api-token`              | jeton de déploiement pour le secret GitHub `FLY_API_TOKEN` |
 | `make api-status` / `api-logs` / `api-url` | état, logs, vérification du déployé       |
 
 ### Tester une recherche + voir les appels API
@@ -200,16 +201,19 @@ Flutter).
 `RUBATO_API` vaut `http://localhost:8091` par défaut → le web Flutter
 (`make web`) marche sans rien faire, à condition que `make api-run` tourne à côté.
 
-Pour l'**APK**, `localhost` désigne le téléphone. Deux options :
+Pour l'**APK**, `localhost` désigne le téléphone : le défaut est donc le
+**backend déployé**, seul joignable depuis un téléphone qui n'est pas sur le
+WiFi de la machine.
 
 ```bash
-make apk RUBATO_API=http://192.168.1.20:8091          # backend local, même WiFi
-make apk RUBATO_API=https://rubato-backend.fly.dev    # backend déployé (ci-dessous)
+make apk                                       # → https://<app>.fly.dev (défaut)
+make apk RUBATO_API=http://192.168.1.20:8091   # backend local, même WiFi
 ```
 
-Le manifest Android autorise le trafic en clair (`usesCleartextTraffic`) : c'est
-nécessaire pour la première forme (le backend local n'a pas de TLS), inutile pour
-la seconde.
+`make apk` dérive l'URL du nom d'app lu dans `fly.toml` ; une surcharge en ligne
+de commande gagne toujours. Le manifest Android autorise le trafic en clair
+(`usesCleartextTraffic`) : inutile pour le défaut en HTTPS, nécessaire pour la
+seconde forme (le backend local n'a pas de TLS).
 
 ## Déploiement (Fly.io)
 
@@ -243,6 +247,28 @@ compris les appels sortants tracés par `curlGet`.
 `make api-login` ouvre le navigateur depuis un conteneur, ce qui peut être
 pénible : un jeton créé sur le site marche aussi, `export FLY_API_TOKEN=…` avant
 la commande (le Makefile le fait passer dans le conteneur).
+
+### Déploiement automatique (push sur `develop`)
+
+`.github/workflows/deploy-backend.yml` redéploie le backend à chaque push sur
+`develop` **qui touche à `backend/`** — un commit purement Dart ne redéploie
+rien. Le job vérifie le formatage, `go vet`, `go test ./...`, déploie, puis
+appelle `/health` pour ne pas déclarer un succès sur un backend muet. Un
+déploiement à la main reste possible depuis l'onglet Actions
+(`workflow_dispatch`).
+
+Il faut un secret **`FLY_API_TOKEN`** dans les réglages du repo GitHub. Le créer
+avec un jeton de **déploiement** (portée limitée à cette app), pas un jeton de
+compte :
+
+```bash
+make api-token     # affiche le jeton à copier dans les secrets GitHub
+```
+
+À savoir : ce workflow **déploie**, il ne crée pas l'app — `make api-create` reste
+à faire une fois en local. Et un jeton dans les secrets GitHub donne le droit de
+déployer sur ton compte facturable : `fly tokens list` / `fly tokens revoke` pour
+faire le ménage.
 
 Le nom d'app est **global chez Fly** : si `rubato-backend` est pris, change-le
 dans `fly.toml` (ligne `app = …`) — le Makefile relit cette ligne, et l'URL

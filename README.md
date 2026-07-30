@@ -49,9 +49,9 @@ make web       # lance l'app sur http://localhost:8090
 make api-run   # backend de recherche en ligne (Go) sur http://localhost:8091
 ```
 
-Pour utiliser l'app sur un téléphone hors du réseau local, le backend se déploie
-sur Fly.io (`make api-deploy`, puis
-`make apk RUBATO_API=https://<app>.fly.dev`) — voir
+Le backend est déployé sur **Fly.io** : `make api-deploy` (ou automatiquement à
+chaque push sur `develop` qui touche `backend/`). `make apk` vise ce backend
+déployé par défaut, `make web` le backend local — voir
 [`backend/README.md`](backend/README.md).
 
 ## Architecture du code (`lib/src/`)

@@ -10,12 +10,17 @@ import 'sse_transport.dart';
 /// Surchargeable au build :
 /// `--dart-define=RUBATO_API=http://192.168.1.20:8091`.
 ///
-/// Par défaut le backend local lancé par `make api-run` (port hôte 8091). Pour
-/// l'APK, il faut viser l'IP LAN de la machine qui l'héberge : `localhost` sur
-/// un téléphone désigne le téléphone.
+/// Par défaut le **backend déployé** (Fly.io) : c'est le seul qu'une app
+/// installée sur un téléphone puisse joindre, `localhost` y désignant le
+/// téléphone. En dev, le Makefile passe l'URL locale (`make web` →
+/// `http://localhost:8091`, le backend de `make api-run`).
+///
+/// ⚠️ Le nom d'app vit dans `backend/fly.toml` ; `make apk` en dérive le
+/// `--dart-define`, donc ce défaut-ci ne sert qu'à un `flutter build` lancé à la
+/// main. Si le nom change là-bas, le changer ici aussi.
 const String _apiBase = String.fromEnvironment(
   'RUBATO_API',
-  defaultValue: 'http://localhost:8091',
+  defaultValue: 'https://rubato-backend.fly.dev',
 );
 
 /// Contenu d'une représentation renvoyé par la recherche, avec sa provenance.

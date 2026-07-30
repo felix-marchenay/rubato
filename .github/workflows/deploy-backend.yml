@@ -1,0 +1,79 @@
+name: Déploiement du backend
+
+# Un push sur `develop` qui touche au backend Go le redéploie sur Fly.io.
+#
+# Le filtre `paths` est important : sans lui, chaque commit Dart redéploierait un
+# backend identique (et réveillerait la machine pour rien). `workflow_dispatch`
+# permet de déployer à la main depuis l'onglet Actions, sans commit.
+#
+# Prérequis, une fois :
+#   1. l'app doit exister chez Fly (`make api-create` en local) — ce workflow
+#      déploie, il ne crée pas ;
+#   2. un jeton dans les secrets du repo, sous le nom FLY_API_TOKEN. Le générer
+#      avec `fly tokens create deploy` (jeton de déploiement, portée limitée à
+#      cette app) plutôt qu'un jeton de compte.
+on:
+  push:
+    branches: [develop]
+    paths:
+      - 'backend/**'
+      - '!backend/README.md' # de la doc : rien à redéployer
+      - '.github/workflows/deploy-backend.yml'
+  workflow_dispatch:
+
+# Deux déploiements simultanés se marcheraient sur les pieds. On ne coupe pas
+# celui en cours : un déploiement interrompu peut laisser l'app entre deux
+# versions.
+concurrency:
+  group: deploy-backend
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Tests + fly deploy
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Les tests avant le déploiement : ils tournent hors-ligne (fixtures dans
+      # testdata/, corpus embarqué, httptest) — aucun appel aux sources réelles,
+      # donc pas de flakiness liée au réseau ou à Cloudflare.
+      - name: Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+
+      - name: Vérifier le formatage
+        run: test -z "$(gofmt -l .)" || { gofmt -l .; exit 1; }
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Tests
+        run: go test ./...
+
+      - name: flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      # --remote-only : c'est le builder de Fly qui construit l'image, le runner
+      # n'a qu'à envoyer le contexte. Le nom d'app et la config viennent de
+      # backend/fly.toml.
+      - name: Déployer
+        run: flyctl deploy --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      # Fly déclare le déploiement réussi dès que la machine démarre : on
+      # vérifie en plus que l'API répond vraiment et que les sources sont
+      # câblées. `|| exit 1` explicite : un backend muet doit faire rougir le job.
+      - name: Vérifier /health
+        run: |
+          app=$(sed -n "s/^app *= *'\(.*\)'.*/\1/p" fly.toml)
+          echo "→ https://$app.fly.dev/health"
+          curl -fsS --retry 5 --retry-delay 3 --retry-connrefused \
+            "https://$app.fly.dev/health" || exit 1
