@@ -267,10 +267,14 @@ make api-token     # affiche le jeton à copier dans les secrets GitHub
 
 Trois pièges sur ce secret, tous rendant le même `no access token available` :
 
-- il doit être un **Repository secret** (Settings → Secrets and variables →
-  Actions, onglet *Secrets*). Un *Environment* secret est invisible d'un job qui
-  ne déclare pas `environment:` — ce workflow n'en déclare pas ;
-- le nom doit être exactement `FLY_API_TOKEN` ;
+- **où il est posé.** Le workflow déclare `environment: prod`, donc il lit les
+  secrets de l'environnement GitHub nommé `prod` — nom **sensible à la casse**,
+  à garder aligné avec la ligne `environment:` du workflow. Un secret posé au
+  niveau du dépôt (*Repository secret*) marche aussi, et sans environnement ;
+  l'inverse — secret d'environnement et job qui ne déclare rien — donne un
+  `secrets.FLY_API_TOKEN` vide. Si l'environnement a une règle *Deployment
+  branches*, elle doit autoriser `develop` ;
+- le nom du secret doit être exactement `FLY_API_TOKEN` ;
 - la valeur est le jeton **entier**, `FlyV1 ` et son espace compris. C'est le
   piège le plus fréquent : on ne copie que la partie `fm2_…`.
 

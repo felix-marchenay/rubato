@@ -32,6 +32,15 @@ jobs:
   deploy:
     name: Tests + fly deploy
     runs-on: ubuntu-latest
+
+    # Le secret FLY_API_TOKEN est un secret d'**environnement** : sans cette
+    # ligne, `secrets.FLY_API_TOKEN` est vide et flyctl échoue sur « no access
+    # token available ». Le nom est sensible à la casse et doit correspondre
+    # exactement à l'environnement défini dans les réglages du dépôt.
+    # ⚠️ Si cet environnement a une règle « Deployment branches », elle doit
+    # autoriser `develop`, sinon le job est refusé avant même de démarrer.
+    environment: prod
+
     defaults:
       run:
         working-directory: backend
@@ -48,7 +57,7 @@ jobs:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
           if [ -z "$FLY_API_TOKEN" ]; then
-            echo "::error::Secret FLY_API_TOKEN absent ou vide. À vérifier : (1) il existe dans Settings → Secrets and variables → Actions, onglet Secrets, en **Repository secret** — un Environment secret est invisible d'un job sans clé environment: ; (2) le nom est exactement FLY_API_TOKEN ; (3) la valeur est le jeton ENTIER rendu par 'make api-token', préfixe 'FlyV1 ' et espace compris."
+            echo "::error::Secret FLY_API_TOKEN absent ou vide. À vérifier : (1) le nom de l'environnement déclaré par ce job (environment: prod) correspond bien, à la casse près, à celui qui porte le secret — ou bien poser le secret en Repository secret ; (2) le nom du secret est exactement FLY_API_TOKEN ; (3) la valeur est le jeton ENTIER rendu par 'make api-token', préfixe 'FlyV1 ' et espace compris."
             exit 1
           fi
           echo "Secret présent (${#FLY_API_TOKEN} caractères)."
