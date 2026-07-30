@@ -12,10 +12,15 @@
 ///  - web : `localStorage`, clés `rubato.db.<clé>`.
 ///
 /// API commune :
-///   Future<String?>      read(String key)
-///   Future<bool>         write(String key, String value)
-///   Future<bool>         delete(String key)
-///   Future<List<String>> keys()
+///
+/// ```dart
+/// Future<String?>      read(String key)
+/// Future<bool>         write(String key, String value)
+/// Future<bool>         delete(String key)
+/// Future<List<String>> keys()
+/// ```
+library;
+
 export 'local_db_stub.dart'
     if (dart.library.io) 'local_db_io.dart'
     if (dart.library.html) 'local_db_web.dart';

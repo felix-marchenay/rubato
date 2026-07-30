@@ -5,8 +5,13 @@
 ///  - web : `localStorage` (pas de système de fichiers dans le navigateur).
 ///
 /// API commune :
-///   Future<String?> read(String songId)              // texte ChordPro ou null
-///   Future<bool>    save(String songId, String pro)   // true si conservé
+///
+/// ```dart
+/// Future<String?> read(String songId)              // texte ChordPro ou null
+/// Future<bool>    save(String songId, String pro)  // true si conservé
+/// ```
+library;
+
 export 'lyrics_store_stub.dart'
     if (dart.library.io) 'lyrics_store_io.dart'
     if (dart.library.html) 'lyrics_store_web.dart';

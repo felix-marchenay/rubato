@@ -188,7 +188,8 @@ class LibraryRepository {
       entry = <String, dynamic>{
         'id': songId,
         'title': title,
-        if (artist != null) 'artist': artist,
+        // `?artist` : entrée omise si null (élément null-aware).
+        'artist': ?artist,
         'tags': tags,
         'types': <String>[],
       };

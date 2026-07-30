@@ -126,7 +126,7 @@ class _ScoreViewState extends State<ScoreView> {
   }
 
   String _hex(Color c) =>
-      '#${(c.value & 0xFFFFFF).toRadixString(16).padLeft(6, '0')}';
+      '#${(c.toARGB32() & 0xFFFFFF).toRadixString(16).padLeft(6, '0')}';
 }
 
 class _Sources {

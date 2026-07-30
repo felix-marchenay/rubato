@@ -10,10 +10,15 @@
 ///    + index `rubato.userlibrary`.
 ///
 /// API commune (type = 'chordGrid' | 'lyrics' | 'score') :
-///   Future<String?> read(String songId, String type)
-///   Future<bool>    write(String songId, String type, String content)
-///   Future<String?> readIndex()
-///   Future<bool>    writeIndex(String json)
+///
+/// ```dart
+/// Future<String?> read(String songId, String type)
+/// Future<bool>    write(String songId, String type, String content)
+/// Future<String?> readIndex()
+/// Future<bool>    writeIndex(String json)
+/// ```
+library;
+
 export 'user_library_store_stub.dart'
     if (dart.library.io) 'user_library_store_io.dart'
     if (dart.library.html) 'user_library_store_web.dart';
