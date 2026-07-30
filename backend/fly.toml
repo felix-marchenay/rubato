@@ -1,8 +1,12 @@
 # Déploiement Fly.io du backend Rubato. Voir la section « Déploiement » du
 # README : `make api-create` (une fois) puis `make api-deploy`.
 #
-# Le nom d'app est **global** chez Fly : si `rubato-backend` est déjà pris,
-# change-le ICI (le Makefile lit cette ligne) — l'URL sera https://<nom>.fly.dev
+# Le nom d'app vit dans un espace de noms **global à tout Fly** (c'est lui qui
+# donne l'URL https://<nom>.fly.dev), donc un nom générique peut être refusé
+# (« Name has already been taken ») — y compris parce qu'on l'a déjà créé soi-même :
+# `fly apps list` avant de renommer quoi que ce soit.
+# Se change ICI, le Makefile lit cette ligne ; penser au défaut Dart de
+# `_apiBase` (le Makefile prévient s'il diverge).
 app = 'rubato-backend'
 primary_region = 'cdg'
 

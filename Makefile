@@ -78,6 +78,8 @@ web:
 
 ## apk     : builder l'APK Android (release)
 apk:
+	@grep -q "https://$(FLY_APP).fly.dev" lib/src/data/remote_catalog_service.dart \
+		|| echo "⚠️  le défaut Dart de _apiBase ne correspond pas au nom d'app de backend/fly.toml ($(FLY_APP))"
 	$(RUN) flutter build apk --release --dart-define=RUBATO_API=$(RUBATO_API)
 
 ## telegram: envoyer l'APK déjà buildé sur Telegram (config dans .env)
