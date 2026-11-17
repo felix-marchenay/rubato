@@ -63,13 +63,13 @@ void main() {
       final channel = FakeChannel([
         result('chordGrid', 'So What', 'Miles Davis', 'irealpro'),
         SseFrame(SseEvents.source,
-            '{"source":"irealpro","count":1,"found":1,"ms":16}'),
+            '{"source":"irealpro","count":1,"ms":16}'),
         // Mêmes titre/artiste : ce sont les paroles DU MÊME morceau → un seul
         // résultat affiché, avec deux représentations.
         result('lyrics', 'So What', 'Miles Davis', 'lrclib'),
         result('chordGrid', 'Creep', 'Radiohead', 'echords'),
         SseFrame(SseEvents.source,
-            '{"source":"echords","count":1,"found":2,"ms":900,"error":null}'),
+            '{"source":"echords","count":1,"ms":900,"error":null}'),
         const SseFrame(SseEvents.done, '{"chordGrids":2,"lyrics":1}'),
       ]);
 
@@ -90,7 +90,7 @@ void main() {
 
       final soWhat = songLists.last.songs.first;
       expect(soWhat.title, 'So What');
-      expect(soWhat.id, 'so-what-miles-davis');
+      expect(soWhat.id, 'so-what-miles-davis-irealpro');
       expect(soWhat.has(RepresentationType.chordGrid), isTrue);
       expect(soWhat.has(RepresentationType.lyrics), isTrue);
       expect(soWhat.sourceOf(RepresentationType.chordGrid), 'irealpro');
@@ -121,9 +121,11 @@ void main() {
       expect(songs.first.title, 'Creep');
     });
 
-    test('la première source d\'un type gagne', () async {
+    test('chaque grille est une version, les paroles vont à toutes', () async {
       final channel = FakeChannel([
+        result('lyrics', 'Creep', 'Radiohead', 'lrclib'),
         result('chordGrid', 'Creep', 'Radiohead', 'irealpro'),
+        result('chordGrid', 'creep', 'RADIOHEAD', 'echords'),
         result('chordGrid', 'Creep', 'Radiohead', 'echords'),
         const SseFrame(SseEvents.done, '{}'),
       ]);
@@ -133,8 +135,16 @@ void main() {
           .toList();
 
       final songs = events.whereType<SearchSongs>().last.songs;
-      expect(songs.length, 1);
-      expect(songs.first.sourceOf(RepresentationType.chordGrid), 'irealpro');
+      expect(songs.map((s) => s.sourceOf(RepresentationType.chordGrid)),
+          ['irealpro', 'echords', 'echords']);
+      expect(songs.map((s) => s.id), [
+        'creep-radiohead-irealpro',
+        'creep-radiohead-echords',
+        'creep-radiohead-echords-2',
+      ]);
+      expect(
+          songs.map((s) => s.sourceOf(RepresentationType.lyrics)).toSet(),
+          {'lrclib'});
     });
   });
 

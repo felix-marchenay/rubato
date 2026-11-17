@@ -74,7 +74,7 @@ func handleSearchStream(engine *search.Engine) http.HandlerFunc {
 			return true
 		}
 
-		agg := search.NewAggregator(0)
+		agg := search.NewAggregator()
 		updates := engine.SearchStream(search.Query{Text: q})
 
 		for {
@@ -101,7 +101,7 @@ func handleSearchStream(engine *search.Engine) http.HandlerFunc {
 						return
 					}
 				}
-				if !send(sourceEvent(u, kept)) {
+				if !send(sourceEvent(kept)) {
 					return
 				}
 			}
@@ -134,14 +134,13 @@ func resultEvents(kept search.Update) []sseEvent {
 	return out
 }
 
-// sourceEvent clôt une source : combien de résultats retenus, en combien de
-// temps, et l'erreur si elle a échoué. C'est ce qui permet à l'app d'afficher
+// sourceEvent clôt une source : combien de résultats, en combien de temps, et
+// l'erreur si elle a échoué. C'est ce qui permet à l'app d'afficher
 // « e-chords ✓ 2 · cifraclub … » pendant la recherche.
-func sourceEvent(u, kept search.Update) sseEvent {
+func sourceEvent(u search.Update) sseEvent {
 	data := map[string]any{
 		"source": u.Source,
-		"count":  kept.Count(),
-		"found":  u.Count(), // avant dédoublonnage
+		"count":  u.Count(),
 		"ms":     u.Elapsed.Milliseconds(),
 	}
 	if u.Err != nil {
