@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"log"
+	"net/url"
 	"os/exec"
 	"strings"
 	"time"
@@ -30,14 +31,24 @@ const fetchTimeout = "15"
 // supplémentaires sont donnés au format « Nom: valeur ». Chaque appel est logué
 // (URL, puis statut + durée) pour rester visible dans les logs du conteneur —
 // c'est tout l'intérêt de `make api-search`.
-//
-// `-w "\n%{http_code}"` ajoute le code HTTP en fin de sortie standard, après
-// tout le corps → on le récupère après le dernier saut de ligne
-// (splitCurlOutput). Sans --fail, curl sort avec un code 0 même sur un 4xx (il a
-// bien reçu une réponse) : l'erreur de transport reste ainsi distincte du statut.
 func curlGet(u string, headers ...string) ([]byte, error) {
+	return curlDo("GET", u, nil, headers)
+}
+
+// curlPost envoie un formulaire (application/x-www-form-urlencoded), pour les
+// rares sources dont la recherche n'accepte que du POST (La Boîte à chansons).
+func curlPost(u string, form url.Values, headers ...string) ([]byte, error) {
+	return curlDo("POST", u, form, headers)
+}
+
+// curlDo exécute l'appel. `-w "\n%{http_code}"` ajoute le code HTTP en fin de
+// sortie standard, après tout le corps → on le récupère après le dernier saut
+// de ligne (splitCurlOutput). Sans --fail, curl sort avec un code 0 même sur un
+// 4xx (il a bien reçu une réponse) : l'erreur de transport reste ainsi
+// distincte du statut.
+func curlDo(method, u string, form url.Values, headers []string) ([]byte, error) {
 	start := time.Now()
-	log.Printf("→ API GET %s", u)
+	log.Printf("→ API %s %s", method, u)
 
 	args := []string{
 		"--silent", "--show-error",
@@ -50,6 +61,11 @@ func curlGet(u string, headers ...string) ([]byte, error) {
 	for _, h := range headers {
 		args = append(args, "-H", h)
 	}
+	if form != nil {
+		// --data-raw et non --data : une valeur commençant par « @ » y serait lue
+		// comme un nom de fichier local.
+		args = append(args, "--data-raw", form.Encode())
+	}
 	args = append(args, "-w", "\n%{http_code}", u)
 
 	out, err := exec.Command("curl", args...).Output()
@@ -58,12 +74,12 @@ func curlGet(u string, headers ...string) ([]byte, error) {
 		if ee, ok := err.(*exec.ExitError); ok {
 			stderr = strings.TrimSpace(string(ee.Stderr))
 		}
-		log.Printf("← API GET %s : échec curl après %s : %v", u, time.Since(start), err)
+		log.Printf("← API %s %s : échec curl après %s : %v", method, u, time.Since(start), err)
 		return nil, fmt.Errorf("curl : %v (%s)", err, stderr)
 	}
 
 	body, code := splitCurlOutput(out)
-	log.Printf("← API GET %s → %s (%s)", u, code, time.Since(start))
+	log.Printf("← API %s %s → %s (%s)", method, u, code, time.Since(start))
 	if code != "200" {
 		return nil, fmt.Errorf("statut inattendu %s", code)
 	}

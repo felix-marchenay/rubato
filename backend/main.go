@@ -54,6 +54,9 @@ func main() {
 		sources.EchordsSearcher{},
 		sources.CifraClubSearcher{},
 		sources.UltimateGuitarSearcher{},
+		sources.SongsterrSearcher{},
+		sources.BoiteAChansonsSearcher{},
+		sources.TheSessionSearcher{},
 		sources.LrclibSearcher{},
 	)
 

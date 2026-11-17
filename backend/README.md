@@ -33,6 +33,10 @@ backend/
       echords.go     e-chords.com
       cifraclub.go   cifraclub.com.br
       ultimateguitar.go  Ultimate Guitar
+      songsterr.go   Songsterr
+      boiteachansons.go  La Boîte à chansons
+      thesession.go  The Session (airs trad, accords lus dans l'ABC)
+      match.go       filtre « tous les mots de la requête » (recherches floues)
       lrclib.go      LRCLIB (paroles)
       data/          le corpus iReal pré-parsé, embarqué dans le binaire
 ```
@@ -50,13 +54,32 @@ Le `Dockerfile` ne sert **qu'au déploiement** : en dev, le service `backend` du
 | `echords`        | grilles  | API JSON d'e-chords, feuille « accords entre crochets »        |
 | `cifraclub`      | grilles  | index Solr public + page `imprimir.html`, accords en `<b>`      |
 | `ultimateguitar` | grilles  | JSON embarqué `js-store` de la page, accords `[ch]…[/ch]`       |
+| `songsterr`      | grilles  | API JSON de recherche + état JSON de la page « chords » : accords **structurés** (fondamentale, type, basse) |
+| `boiteachansons` | grilles  | répertoire **francophone** ; recherche en POST (JSON), accords dans `data-a` |
+| `thesession`     | grilles  | airs trad irlandais, API JSON ouverte ; accords et **vraies mesures** lus dans l'ABC |
 | `lrclib`         | paroles  | API JSON ouverte, paroles → ChordPro, un seul appel            |
 
 Ajouter une source = un fichier dans `search/sources/` qui implémente
 `search.Searcher` (`Name()` + `Search()`), plus une ligne dans `main.go`. Les
 formats de feuille se partagent deux lecteurs dans `chart` : `TaggedSource`
-(accords balisés : e-chords, Cifra Club) et `SectionsFromChordLines` (lignes
-d'accords pures : Ultimate Guitar).
+(accords balisés : e-chords, Cifra Club, La Boîte à chansons) et
+`SectionsFromChordLines` (lignes d'accords pures : Ultimate Guitar). Songsterr
+(feuille déjà structurée) et The Session (ABC) alimentent directement un
+`chart.Builder` / des sections.
+
+Certaines recherches sont floues ou trop strictes, d'où quelques ajustements :
+
+- **Songsterr** et **The Session** ne gardent que les morceaux dont titre +
+  artiste contiennent tous les mots de la requête (`matchesWords`) : sinon
+  « la boheme aznavour » ramène les autres titres d'Aznavour, et « creep
+  radiohead » le hornpipe « The Creep ».
+- **La Boîte à chansons** cherche la requête telle quelle dans le titre *ou*
+  l'artiste : « la boheme aznavour » n'y trouve rien. La source relance donc
+  en retirant des mots (« la boheme », puis « boheme aznavour »…, 4 requêtes
+  au plus) et ne garde que les morceaux qui contiennent les mots retirés.
+- **The Session** : beaucoup de versions d'un air n'ont pas d'accords ; on
+  prend la première qui en a. Une mesure sans accord reprend le précédent
+  (convention du corpus iReal), une partie sans aucun accord est écartée.
 
 ## Contrat d'API
 
@@ -320,9 +343,10 @@ le défaut Dart de `_apiBase` doit suivre, et `make apk` prévient s'il a diverg
   veux vraiment fermer la porte il faudra un jeton partagé (en-tête vérifié côté
   backend + `--dart-define` côté app). Pas fait pour l'instant.
 - **IP de datacenter** : Cloudflare est plus dur avec les IP de cloud qu'avec une
-  IP résidentielle. `irealpro` (embarqué) et `lrclib` sont insensibles ;
-  `echords`, `cifraclub` et `ultimateguitar` peuvent se faire bloquer là où ils
-  passent depuis chez toi. À vérifier avec `make api-url` / `make api-logs` après
+  IP résidentielle. `irealpro` (embarqué), `lrclib` et `thesession` (API
+  ouverte) sont insensibles ; `echords`, `cifraclub`, `ultimateguitar`,
+  `songsterr` et `boiteachansons` peuvent se faire bloquer là où ils passent
+  depuis chez toi. À vérifier avec `make api-url` / `make api-logs` après
   le premier déploiement — une source bloquée est loguée et ignorée, la recherche
   continue avec les autres.
 
@@ -345,17 +369,18 @@ binaire** par `go:embed`. Ils sont produits par
 Pro → parser `irealb://` de `scripts/import_irealpro.py`). Relancer le script
 suffit à rafraîchir le corpus.
 
-C'est la seule source qui donne de **vraies mesures** (plusieurs accords dans une
-mesure) : les sources scrapées retombent sur la convention « une mesure = un
-accord », faute de barres de mesure dans leurs feuilles.
+Avec `thesession` (barres de mesure de l'ABC), c'est la seule source qui donne
+de **vraies mesures** (plusieurs accords dans une mesure) : les autres sources
+scrapées retombent sur la convention « une mesure = un accord », faute de barres
+de mesure dans leurs feuilles.
 
 ## Sources non portées (dette assumée)
 
 Du backend JS, il reste deux choses non portées :
 
-- **The Session** (mélodies ABC, domaine public) — plus de mélodie dans la
-  recherche en ligne ; les `.abc` déposés dans `assets/scores/` marchent toujours.
-  Le contrat prévoit déjà la nature `score` : c'est une source à écrire, rien de
-  plus.
+- **The Session — mélodies** (ABC) — la source `thesession` n'en extrait que
+  les accords ; plus de mélodie dans la recherche en ligne. Les `.abc` déposés
+  dans `assets/scores/` marchent toujours, et le contrat prévoit déjà la nature
+  `score` : le même appel (`/tunes/<id>?format=json`) suffirait.
 - **Forum iReal Pro en direct** (grilles) — le corpus embarqué couvre le même
   besoin sans réseau ni anti-bot ; le scraping live du forum n'a pas été repris.

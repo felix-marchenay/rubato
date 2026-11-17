@@ -74,8 +74,11 @@ Détails complets dans [`backend/README.md`](backend/README.md) ; l'essentiel :
   aller-retour.
 - **Sources** (ordre de priorité) : corpus **iReal Pro embarqué** (go:embed,
   ~1 700 standards, instantané, vraies mesures), **e-chords**, **Cifra Club**,
-  **Ultimate Guitar** pour les grilles ; **LRCLIB** pour les paroles. Une source =
-  un fichier dans `backend/search/sources/`. Non portée : The Session (mélodies).
+  **Ultimate Guitar**, **Songsterr** (accords structurés), **La Boîte à
+  chansons** (répertoire francophone), **The Session** (airs trad, vraies
+  mesures lues dans l'ABC) pour les grilles ; **LRCLIB** pour les paroles. Une
+  source = un fichier dans `backend/search/sources/`. Non portée : les mélodies
+  de The Session.
 - Les sources de grilles renvoient accords **+ paroles** ; le backend n'extrait
   que l'harmonie (package `chart`) — aucune parole ne sort de ces sources.
 - **Flux côté app** : `RemoteCatalogService.searchStream()` rend des `SearchEvent`
