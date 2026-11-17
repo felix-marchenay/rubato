@@ -48,13 +48,12 @@ func TestSearchFailsWhenEverySourceFails(t *testing.T) {
 	}
 }
 
-// Le même morceau chez deux sources ne doit apparaître qu'une fois, et c'est la
-// source la plus prioritaire (ordre de NewEngine) qui gagne.
-func TestSearchDedupsBySongPriorityToFirstSource(t *testing.T) {
+// Le même morceau chez deux sources donne deux versions : rien n'est écarté.
+func TestSearchKeepsEveryVersion(t *testing.T) {
 	e := NewEngine(
 		stub{name: "premiere", grids: []ChordGridResult{grid("Ain't Misbehavin'", "Fats Waller", "premiere")}},
 		stub{name: "seconde", grids: []ChordGridResult{
-			grid("aint misbehavin", "FATS WALLER", "seconde"), // même morceau, écrit autrement
+			grid("aint misbehavin", "FATS WALLER", "seconde"),
 			grid("Épistrophy", "Thelonious Monk", "seconde"),
 		}},
 	)
@@ -63,11 +62,8 @@ func TestSearchDedupsBySongPriorityToFirstSource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Search : %v", err)
 	}
-	if len(res.ChordGrids) != 2 {
-		t.Fatalf("nb grilles = %d, want 2 (%+v)", len(res.ChordGrids), res.ChordGrids)
-	}
-	if res.ChordGrids[0].Source != "premiere" {
-		t.Errorf("source retenue = %q, want « premiere »", res.ChordGrids[0].Source)
+	if len(res.ChordGrids) != 3 {
+		t.Fatalf("nb grilles = %d, want 3 (%+v)", len(res.ChordGrids), res.ChordGrids)
 	}
 }
 

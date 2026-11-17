@@ -45,9 +45,7 @@ func main() {
 	short := flag.Bool("short", false, "avec -q : résumé lisible au lieu du JSON complet")
 	flag.Parse()
 
-	// On câble ici les sources de recherche. L'ordre est l'ordre de priorité en
-	// cas de doublon : le corpus iReal embarqué d'abord (instantané, vraies
-	// mesures), puis les sources scrapées de grilles, puis les paroles. Les
+	// On câble ici les sources de recherche (ordre de /health et du batch). Les
 	// appels API sortants sont logués par curlGet, en mode serveur comme en CLI.
 	engine := search.NewEngine(
 		sources.IRealCorpusSearcher{},
@@ -117,7 +115,7 @@ func renderStream(engine *search.Engine, q string) {
 		fmt.Printf("  %-8s %-44s %-14s %6d o\n", kind, truncate(label, 44), source, len(content))
 	}
 
-	agg := search.NewAggregator(0)
+	agg := search.NewAggregator()
 	for u := range engine.SearchStream(search.Query{Text: q}) {
 		kept := agg.Accept(u)
 		for _, g := range kept.Grids {
@@ -129,7 +127,7 @@ func renderStream(engine *search.Engine, q string) {
 		for _, m := range kept.Melodies {
 			line("mélodie", m.Title, m.Artist, m.Source, m.Content)
 		}
-		status := fmt.Sprintf("%d retenu(s) sur %d", kept.Count(), u.Count())
+		status := fmt.Sprintf("%d résultat(s)", kept.Count())
 		if u.Err != nil {
 			status = "échec : " + u.Err.Error()
 		}

@@ -215,7 +215,7 @@ class RemoteCatalogService {
   Future<List<RemoteSong>> search(String query) async {
     final resp = await http
         .get(_uri('/search', {'q': query}))
-        .timeout(const Duration(seconds: 40));
+        .timeout(const Duration(minutes: 3));
     if (resp.statusCode != 200) {
       throw Exception('Recherche indisponible (HTTP ${resp.statusCode})');
     }
@@ -266,13 +266,14 @@ class RemoteCatalogService {
 
 /// Regroupe les résultats par morceau (titre + artiste), au fil de leur arrivée.
 ///
-/// Le backend renvoie une liste **par nature** (grilles, paroles, mélodies) ;
-/// l'app, elle, affiche un morceau avec ses représentations. La première source
-/// d'un type gagne : le backend a déjà dédoublonné et priorisé.
+/// Le backend ne dédoublonne pas : chaque grille est une **version** du morceau
+/// (une entrée par grille), et les paroles ou la mélodie se rattachent à toutes
+/// ses versions.
 class _Aggregator {
-  final Map<String, RemoteSong> _byKey = {};
+  final Map<String, List<RemoteSong>> _byKey = {};
 
-  List<RemoteSong> get songs => List.unmodifiable(_byKey.values);
+  List<RemoteSong> get songs =>
+      List.unmodifiable(_byKey.values.expand((versions) => versions));
 
   /// Ajoute un résultat du flux (`{type,title,artist,source,content}`).
   /// Retourne `false` si le résultat était inexploitable ou déjà connu.
@@ -299,23 +300,68 @@ class _Aggregator {
     artist = artist.trim();
     if (title.isEmpty || content.isEmpty) return false;
 
-    final key = '${RemoteCatalogService.slug(title)}|${RemoteCatalogService.slug(artist)}';
-    final existing = _byKey[key];
-    if (existing != null && existing.has(type)) return false;
+    const slug = RemoteCatalogService.slug;
+    final versions =
+        _byKey.putIfAbsent('${slug(title)}|${slug(artist)}', () => []);
+    final remote = RemoteContent(source: source, content: content);
 
-    final contents = <RepresentationType, RemoteContent>{
-      ...?existing?.contents,
-      type: RemoteContent(source: source, content: content),
-    };
-    _byKey[key] = RemoteSong(
+    if (type != RepresentationType.chordGrid) {
+      if (versions.isEmpty) {
+        versions.add(_song(versions, title, artist, {type: remote}));
+        return true;
+      }
+      var changed = false;
+      for (var i = 0; i < versions.length; i++) {
+        final v = versions[i];
+        if (v.has(type)) continue;
+        versions[i] = RemoteSong(
+          id: v.id,
+          title: v.title,
+          artist: v.artist,
+          contents: Map.unmodifiable({...v.contents, type: remote}),
+        );
+        changed = true;
+      }
+      return changed;
+    }
+
+    final i = versions.indexWhere((v) => !v.has(type));
+    if (i >= 0) {
+      final v = versions[i];
+      versions[i] = _song(
+          versions, v.title, v.artist ?? '', {...v.contents, type: remote});
+    } else {
+      final shared = {
+        for (final e in versions.firstOrNull?.contents.entries ??
+            const <MapEntry<RepresentationType, RemoteContent>>[])
+          if (e.key != type) e.key: e.value,
+      };
+      versions.add(_song(versions, title, artist, {...shared, type: remote}));
+    }
+    return true;
+  }
+
+  /// L'identifiant sert de clé dans la bibliothèque perso : il porte la source
+  /// de la grille pour que deux versions ajoutées ne s'écrasent pas.
+  static RemoteSong _song(List<RemoteSong> versions, String title,
+      String artist, Map<RepresentationType, RemoteContent> contents) {
+    const slug = RemoteCatalogService.slug;
+    final grid = contents[RepresentationType.chordGrid]?.source;
+    final rank = grid == null
+        ? 0
+        : versions
+            .where((v) => v.sourceOf(RepresentationType.chordGrid) == grid)
+            .length;
+    return RemoteSong(
       id: [
-        RemoteCatalogService.slug(title),
-        if (artist.isNotEmpty) RemoteCatalogService.slug(artist),
+        slug(title),
+        if (artist.isNotEmpty) slug(artist),
+        if (grid != null && grid.isNotEmpty) slug(grid),
+        if (rank > 0) '${rank + 1}',
       ].join('-'),
-      title: existing?.title ?? title,
-      artist: existing?.artist ?? (artist.isEmpty ? null : artist),
+      title: title,
+      artist: artist.isEmpty ? null : artist,
       contents: Map.unmodifiable(contents),
     );
-    return true;
   }
 }

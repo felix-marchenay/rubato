@@ -6,9 +6,6 @@ import (
 	"unicode"
 )
 
-// maxResultsPerType plafonne le nombre de résultats renvoyés par nature.
-const maxResultsPerType = 10
-
 // Engine orchestre plusieurs Searcher. Les implémentations lui sont injectées
 // (c'est main qui les câble) : ainsi le package search ne dépend pas de
 // search/sources, et il n'y a aucun cycle d'import.
@@ -32,7 +29,7 @@ func (e *Engine) Sources() []string {
 
 // Search : recherche **batch** (endpoint /search). Elle consomme le flux de
 // SearchStream jusqu'au bout, donc elle interroge toutes les sources en
-// parallèle, dédoublonne et plafonne exactement comme le mode flux.
+// parallèle, sans dédoublonner ni plafonner, exactement comme le mode flux.
 //
 // Politique d'erreur : best-effort. Une source qui échoue est loguée et ignorée
 // — les autres répondent quand même (c'était déjà le comportement du backend JS
@@ -40,7 +37,7 @@ func (e *Engine) Sources() []string {
 // que si **toutes** les sources échouent : là, c'est le backend qui a un
 // problème, pas une source.
 func (e *Engine) Search(q Query) (Results, error) {
-	agg := NewAggregator(maxResultsPerType)
+	agg := NewAggregator()
 	out := Results{
 		ChordGrids: []ChordGridResult{},
 		Lyrics:     []LyricsResult{},
@@ -62,12 +59,6 @@ func (e *Engine) Search(q Query) (Results, error) {
 		return out, errors.Join(errs...)
 	}
 	return out, nil
-}
-
-// songKey normalise titre + artiste pour la comparaison : sans accents, sans
-// ponctuation, sans casse (« Ain't Misbehavin' » == « aint misbehavin »).
-func songKey(title, artist string) string {
-	return NormalizeKey(title) + "|" + NormalizeKey(artist)
 }
 
 // NormalizeKey réduit un libellé à sa forme comparable : minuscules, sans
@@ -123,28 +114,4 @@ func foldAccent(r rune) rune {
 		return base
 	}
 	return r
-}
-
-// dedup garde le premier résultat de chaque clé (donc la source la plus
-// prioritaire, l'ordre de NewEngine étant préservé).
-func dedup[T any](items []T, key func(T) string) []T {
-	seen := make(map[string]bool, len(items))
-	out := make([]T, 0, len(items))
-	for _, it := range items {
-		k := key(it)
-		if seen[k] {
-			continue
-		}
-		seen[k] = true
-		out = append(out, it)
-	}
-	return out
-}
-
-// limit tronque une slice aux n premiers éléments.
-func limit[T any](s []T, n int) []T {
-	if len(s) > n {
-		return s[:n]
-	}
-	return s
 }

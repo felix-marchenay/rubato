@@ -106,8 +106,8 @@ Il n'y a donc **pas d'endpoint `/representation`** (contrairement au backend JS)
 un seul aller-retour suffit, l'app ajoute le morceau à sa bibliothèque sans
 re-appeler le backend. En contrepartie chaque source plafonne le nombre de
 morceaux dont elle récupère le contenu (3 pour les sites scrapés, un appel HTTP
-chacun ; 5 pour LRCLIB et 8 pour le corpus, qui n'en coûtent aucun), pour que la
-recherche reste rapide.
+chacun ; 5 pour LRCLIB et 8 pour le corpus, qui n'en coûtent aucun). Il n'y a
+pas d'autre plafond : tout ce que les sources rapportent est renvoyé.
 
 ### `GET /search/stream` — résultats au compte-gouttes (SSE)
 
@@ -118,14 +118,13 @@ qu'elle a fini.
 
 ```
 event: result   data: {"type":"chordGrid","title":…,"artist":…,"source":…,"content":…}
-event: source   data: {"source":"echords","count":1,"found":2,"ms":5032}
+event: source   data: {"source":"echords","count":2,"ms":5032}
 event: done     data: {"chordGrids":4,"lyrics":2,"melodies":0}
 ```
 
 - `result` — un résultat de plus (`type` = `chordGrid` | `lyrics` | `score`) ;
-- `source` — une source vient de finir : combien retenu (`count`), combien trouvé
-  avant dédoublonnage (`found`), en combien de temps, et `error` si elle a
-  échoué ;
+- `source` — une source vient de finir : combien de résultats (`count`), en
+  combien de temps, et `error` si elle a échoué ;
 - `done` — fin du flux, le serveur ferme. **Le client doit fermer aussi** :
   côté navigateur, `EventSource` se reconnecte sinon en boucle.
 
@@ -136,7 +135,7 @@ depuis Dart natif. Un seul format pour les deux plateformes.
 Vu en vrai (`curl -N`), une recherche « creep radiohead » :
 
 ```
- 0.00s  source   irealpro       count=0 found=0 13ms
+ 0.00s  source   irealpro       count=0 13ms
  0.75s  result   chordGrid  Creep                        ultimateguitar
  1.02s  result   chordGrid  Creep (Acoustic)             cifraclub
  1.98s  result   lyrics     Creep                        lrclib
@@ -147,17 +146,14 @@ Vu en vrai (`curl -N`), une recherche « creep radiohead » :
 Le mode batch et le mode flux partagent le **même** code : `Search()` consomme
 `SearchStream()` jusqu'au bout. Pas de risque de dérive entre les deux endpoints.
 
-Un compromis à connaître : en flux, un doublon est gagné par la **première source
-à répondre**, pas par la plus prioritaire — impossible d'arbitrer sans attendre
-tout le monde. En pratique le corpus embarqué répond avant tous les autres.
-
 Autres règles du contrat :
 - `q` de moins de 2 caractères → `400 {"error":"q trop court"}`.
 - Une source qui échoue est **loguée et ignorée** (best-effort) ; l'erreur n'est
   remontée (`502`) que si **toutes** les sources échouent.
 - Un résultat sans contenu exploitable n'est pas renvoyé (l'app n'en ferait rien).
-- Doublons fusionnés sur titre + artiste normalisés ; l'ordre de câblage des
-  sources dans `main.go` fait la priorité.
+- **Aucun dédoublonnage** : un morceau trouvé par plusieurs sources donne une
+  grille par source. L'app en fait autant de versions du morceau, auxquelles
+  elle rattache les paroles.
 - **CORS ouvert** (`Access-Control-Allow-Origin: *`) + réponse aux préflights
   `OPTIONS` : sans ça, le web Flutter (servi sur le port 8090) ne peut pas lire
   les réponses.

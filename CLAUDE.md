@@ -72,13 +72,16 @@ Détails complets dans [`backend/README.md`](backend/README.md) ; l'essentiel :
   repli). **Pas de `/representation`** : le contenu est **embarqué dans les
   résultats** (`{title,artist,source,content}` au format pivot), un seul
   aller-retour.
-- **Sources** (ordre de priorité) : corpus **iReal Pro embarqué** (go:embed,
+- **Sources** : corpus **iReal Pro embarqué** (go:embed,
   ~1 700 standards, instantané, vraies mesures), **e-chords**, **Cifra Club**,
   **Ultimate Guitar**, **Songsterr** (accords structurés), **La Boîte à
   chansons** (répertoire francophone), **The Session** (airs trad, vraies
   mesures lues dans l'ABC) pour les grilles ; **LRCLIB** pour les paroles. Une
   source = un fichier dans `backend/search/sources/`. Non portée : les mélodies
   de The Session.
+- **Aucun dédoublonnage ni plafond global** : un morceau trouvé par trois
+  sources donne trois grilles, que l'app affiche comme trois versions du morceau
+  (id `<titre>-<artiste>-<source>`), les paroles étant rattachées à chacune.
 - Les sources de grilles renvoient accords **+ paroles** ; le backend n'extrait
   que l'harmonie (package `chart`) — aucune parole ne sort de ces sources.
 - **Flux côté app** : `RemoteCatalogService.searchStream()` rend des `SearchEvent`
