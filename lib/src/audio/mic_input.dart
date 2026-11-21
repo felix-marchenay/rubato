@@ -47,6 +47,10 @@ class MicInput {
         autoGain: false,
         echoCancel: false,
         noiseSuppress: false,
+        // Petits paquets (~20 ms) : par défaut Android en envoie de 80 à
+        // 170 ms, autant de retard avant la moindre analyse. Octets sur
+        // Android, échantillons sur le web.
+        streamBufferSize: kIsWeb ? 1024 : 2048,
         androidConfig: AndroidRecordConfig(audioSource: source),
       );
 

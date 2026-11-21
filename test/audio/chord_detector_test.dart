@@ -197,7 +197,7 @@ void main() {
     expect(frames.last.chord?.toChord().raw, 'C');
   });
 
-  test('changement d\'accord : pas de clignotement, réaction < 0,6 s', () {
+  test('changement d\'accord : pas de clignotement, réaction < 0,3 s', () {
     final c = guitarStrum('x32010', seconds: 1.5);
     final g = guitarStrum('320003', seconds: 1.5, seed: 2);
     final frames = run(concat([c, g]));
@@ -207,7 +207,7 @@ void main() {
     final hop = (c.length + g.length) / frames.length;
     final switchAt = frames.indexWhere((f) => f.chord?.toChord().raw == 'G');
     final latency = (switchAt + 1) * hop / 44100 - 1.5;
-    expect(latency, lessThan(0.6));
+    expect(latency, lessThan(0.3));
   });
 
   group('accordage décalé', () {

@@ -125,20 +125,26 @@ Chaîne dans `lib/src/audio/`, sans dépendance native hors capture :
 - `mic_input.dart` : `record` en flux PCM 16 bits mono (44,1 kHz Android, 48 kHz
   web), **AGC / anti-écho / anti-bruit coupés** (ils abîment la musique), source
   Android `unprocessed`. `pcm.dart` : décodage + sous-échantillonnage filtré.
-- `chord_detector.dart` : ramène à ~11 kHz, fenêtre 4096 (~0,37 s), pas ~46 ms ;
-  seuil de niveau (dBFS, réglable) ; stabilisation (3 trames d'affilée + marge)
-  et accord gardé pendant les silences.
+- `chord_detector.dart` : ramène à ~11 kHz, fenêtre 4096 (~0,37 s) **asymétrique**
+  (sommet à 85 % : le son récent pèse le plus), pas de 30 ms ; seuil de niveau
+  (dBFS, réglable) ; stabilisation (3 trames d'affilée + marge) et accord gardé
+  pendant les silences. **Latence** mesurée sur des enchaînements grattés :
+  ~205 ms (contre ~320 ms en Hann symétrique / pas de 46 ms), sans perte de
+  précision. Essais écartés : fenêtre de 0,19 s (précision en baisse), raccourci
+  « accord très net » et analyse calée sur l'attaque (clignotement ou plus lent).
+  Côté capture, `streamBufferSize` ≈ 20 ms (Android envoyait 80–170 ms).
 - `chroma.dart` : FFT (`fftea`) → pics nets (plancher = **médiane** locale) →
   **NNLS** (notes × modèle d'harmoniques, à la Chordino) → chroma 12 classes +
   basse (note la plus grave présente) + accordage estimé (`TuningTracker`).
 - **Pas d'accord sans 3 notes** : `summarize` compte les classes de hauteur
-  au-dessus de `noteFloor` (10 % de la note la plus forte), sans compter les
-  résidus probables d'harmoniques 5 et 7 d'une note plus grave (un Sol seul
+  au-dessus de `noteFloor` (6 % de la note la plus forte), sans compter les
+  résidus probables d'harmoniques 5, 7 et 9 d'une note plus grave (un Sol seul
   laisse un peu de Ré et de Si : Sol-Ré-Si ferait un accord). La quinte
   (harmonique 3) ne se tranche pas : un power chord peut se lire « sus2 ».
 - **Rémanence** (`NoteRemanence`, réglable 0,15–4 s, défaut 1,2 s) : chaque
   note pèse `exp(−âge/τ)`, l'âge courant depuis sa dernière attaque (remontée
-  ×1,5 au-dessus de son creux). Les notes de l'accord d'avant qui résonnent
+  ×1,25 de **sa fondamentale** au-dessus de son creux : les harmoniques d'une
+  nouvelle note ne « rajeunissent » pas une ancienne). Les notes de l'accord d'avant qui résonnent
   s'effacent devant les nouvelles ; une rémanence longue sert aux arpèges.
 - Réglages (sensibilité, rémanence, vocabulaire) : feuille commune
   `widgets/listening_settings_sheet.dart`, mémorisés via `LocalDb`

@@ -104,24 +104,42 @@ class ChordStabilizer {
 
 /// Chaîne complète : échantillons du micro → accord affiché.
 ///
-/// Le signal est ramené vers ~11 kHz (seuls 60 Hz–2 kHz nous intéressent),
-/// analysé toutes les ~45 ms sur une fenêtre de ~0,37 s (compromis entre la
-/// finesse en fréquence nécessaire dans le grave et la réactivité).
+/// Le signal est ramené vers ~11 kHz (seuls 60 Hz–2 kHz nous intéressent) et
+/// analysé toutes les 30 ms sur une fenêtre de ~0,37 s : assez longue pour
+/// distinguer les notes graves, mais asymétrique (sommet à 85 %) pour que le
+/// son récent pèse le plus. Latence mesurée sur des enchaînements grattés :
+/// ~200 ms entre le coup de médiator et l'affichage, sans clignotement.
 class ChordDetector {
   ChordDetector({
     required int sampleRate,
     ChordVocabulary vocabulary = ChordVocabulary.standard,
     this.gateDb = -55,
     double remanenceSeconds = 1.2,
+    double windowSeconds = 0.37,
+    double windowPeak = 0.85,
+    double hopSeconds = 0.03,
+    double confirmSeconds = 0.09,
+    double smoothingSeconds = 0.03,
   })  : _decimator = Decimator(math.max(1, (sampleRate / 11025).round())),
         _vocabulary = vocabulary,
         _matcher = ChordMatcher(vocabulary) {
     analysisRate = sampleRate / _decimator.factor;
-    frameSize = analysisRate > 12500 ? 8192 : 4096;
-    hopSize = frameSize ~/ 8;
+    // Puissance de 2 la plus proche de la durée de fenêtre demandée.
+    frameSize = 1 <<
+        (math.log(windowSeconds * analysisRate) / math.ln2).round();
+    hopSize = math.max(1, (hopSeconds * analysisRate).round());
+    final hop = hopSize / analysisRate;
+    _stabilizer = ChordStabilizer(
+      confirmFrames: math.max(1, (confirmSeconds / hop).round()),
+    );
+    _keep = smoothingSeconds <= 0 ? 0 : math.exp(-hop / smoothingSeconds);
     _ring = Float64List(frameSize);
     _frame = Float64List(frameSize);
-    _analyzer = ChromaAnalyzer(sampleRate: analysisRate, frameSize: frameSize);
+    _analyzer = ChromaAnalyzer(
+      sampleRate: analysisRate,
+      frameSize: frameSize,
+      windowPeak: windowPeak,
+    );
     _remanence = NoteRemanence(
       _analyzer.noteSlots,
       hopSeconds: hopSize / analysisRate,
@@ -141,8 +159,11 @@ class ChordDetector {
   late final ChromaAnalyzer _analyzer;
   late final NoteRemanence _remanence;
   final _tuning = TuningTracker();
-  final _stabilizer = ChordStabilizer();
+  late final ChordStabilizer _stabilizer;
   final _smoothed = Float64List(12);
+
+  /// Part du chroma précédent gardée à chaque trame (lissage).
+  late final double _keep;
 
   /// Seuil de niveau (dBFS) sous lequel on considère qu'il n'y a pas de son.
   double gateDb;
@@ -197,11 +218,11 @@ class ChordDetector {
         _frame[i] = _ring[(_writePos + i) % frameSize];
       }
       final notes = _analyzer.estimateNotes(_frame, tuningCents: _tuning.cents);
-      _remanence.apply(notes.levels);
+      _remanence.apply(notes);
       final raw = _analyzer.summarize(notes);
       if (!raw.isEmpty) _tuning.add(raw);
       for (var i = 0; i < 12; i++) {
-        _smoothed[i] = 0.5 * _smoothed[i] + 0.5 * raw.chroma[i];
+        _smoothed[i] = _keep * _smoothed[i] + (1 - _keep) * raw.chroma[i];
       }
       // Une note seule (ou une quinte) n'est pas un accord, même si elle
       // ressemble à l'un d'eux plus qu'aux autres.
