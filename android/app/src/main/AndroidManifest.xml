@@ -2,6 +2,11 @@
     <!-- Requis pour récupérer les paroles en ligne (LRCLIB) et interroger le
          backend de recherche (RUBATO_API). -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Écran « Écouter » : reconnaissance de l'accord joué. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <!-- Mise à jour de l'appli hors Play Store : ouvrir l'installeur d'Android
+         sur l'APK téléchargé (ota_update). -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
     <!-- usesCleartextTraffic : le backend Go tourne en HTTP simple sur le réseau
          local (http://<ip-lan>:8091) ; sans ceci, Android bloque l'appel. -->
     <application
@@ -31,6 +36,17 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!-- Donne à l'installeur d'Android l'accès à l'APK téléchargé par
+             ota_update (res/xml/filepaths.xml). -->
+        <provider
+            android:name="sk.fourq.otaupdate.OtaUpdateFileProvider"
+            android:authorities="${applicationId}.ota_update_provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/filepaths" />
+        </provider>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

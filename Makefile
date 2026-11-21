@@ -24,7 +24,12 @@ RUBATO_API ?= http://localhost:8091
 # même WiFi. Variable spécifique aux cibles → une surcharge en ligne de commande
 # gagne toujours, pour tester contre son backend local :
 #   make apk RUBATO_API=http://192.168.1.20:8091
-apk apk-telegram: RUBATO_API = https://$(FLY_APP).fly.dev
+apk apk-telegram release: RUBATO_API = https://$(FLY_APP).fly.dev
+
+# Numéro de build croissant (minutes écoulées depuis 2024-01-01 UTC) : Android
+# refuse une mise à jour dont ce numéro baisse, et l'appli le compare à celui
+# de latest.json pour savoir si une version plus récente est publiée.
+BUILD_NUMBER := $(shell echo $$(( ($$(date -u +%s) - 1704067200) / 60 )))
 
 # ── Backend Go (service `backend` du docker-compose) ─────────────────────────
 # Rien sur l'hôte : Go tourne dans le conteneur compose (image officielle Go).
@@ -42,7 +47,7 @@ FLY_APP := $(shell sed -n "s/^app *= *'\(.*\)'.*/\1/p" backend/fly.toml)
 FLY := docker run --rm -it -e FLY_API_TOKEN -e HOME=/ \
 	-v $(HOME)/.fly:/.fly -v $(CURDIR)/backend:/app -w /app flyio/flyctl:latest
 
-.PHONY: build shell create get analyze test web apk telegram apk-telegram clean doctor search \
+.PHONY: build shell create get analyze test web apk telegram apk-telegram keystore release clean doctor search \
 	api-run api-search api-test api-tidy api-image api-image-run \
 	api-login api-create api-list api-deploy api-token api-status api-logs api-url
 
@@ -76,11 +81,17 @@ web:
 	$(RUNP) flutter run -d web-server --web-hostname 0.0.0.0 --web-port 8080 \
 		--dart-define=RUBATO_API=$(RUBATO_API)
 
-## apk     : builder l'APK Android (release)
+## apk     : builder l'APK Android (release). ARM 32/64 bits seulement (tous les
+##   téléphones) : x86_64, réservé aux émulateurs, ajouterait 19 Mo et ferait
+##   dépasser la limite de 50 Mo de Telegram.
 apk:
 	@grep -q "https://$(FLY_APP).fly.dev" lib/src/data/remote_catalog_service.dart \
 		|| echo "⚠️  le défaut Dart de _apiBase ne correspond pas au nom d'app de backend/fly.toml ($(FLY_APP))"
-	$(RUN) flutter build apk --release --dart-define=RUBATO_API=$(RUBATO_API)
+	@test -f android/key.properties \
+		|| echo "⚠️  pas de clé de signature stable : cet APK ne pourra pas mettre à jour le précédent (make keystore)"
+	$(RUN) flutter build apk --release --build-number=$(BUILD_NUMBER) \
+		--target-platform android-arm,android-arm64 \
+		--dart-define=RUBATO_API=$(RUBATO_API)
 
 ## telegram: envoyer l'APK déjà buildé sur Telegram (config dans .env)
 telegram:
@@ -89,6 +100,22 @@ telegram:
 ## apk-telegram : builder l'APK PUIS l'envoyer sur Telegram
 apk-telegram: apk
 	$(RUN) bash scripts/send-telegram.sh
+
+## keystore : générer UNE FOIS la clé de signature des APK (android/app/rubato-release.jks
+##   + android/key.properties, git-ignorés) ; copie de secours dans ~/.config/rubato/.
+##   La perdre = plus de mise à jour possible sans désinstaller l'appli.
+keystore:
+	$(RUN) bash scripts/make-keystore.sh
+	@mkdir -p $(HOME)/.config/rubato/signing
+	@cp android/key.properties android/app/rubato-release.jks $(HOME)/.config/rubato/signing/
+	@chmod -R go-rwx $(HOME)/.config/rubato
+	@echo "💾 Copie de secours : ~/.config/rubato/signing/ (à garder aussi ailleurs : gestionnaire de mots de passe…)"
+
+## release : publier une mise à jour de l'appli Android. APK signé → release GitHub
+##   « android-latest » (APK + latest.json) ; les téléphones la proposent au lancement.
+##   make release NOTES="Écoute : meilleure détection des 7e"
+release: apk
+	@bash scripts/publish-release.sh "$(BUILD_NUMBER)" "$(NOTES)"
 
 ## search  : recherche rapide via le backend Go, résultats lisibles
 ##   make search creep radiohead

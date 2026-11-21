@@ -1,16 +1,72 @@
+import 'package:flutter/foundation.dart' show setEquals;
 import 'package:flutter/material.dart';
 
+import '../../audio/practice.dart' show ChordRef;
 import '../../domain/chord_chart.dart';
 import '../chord_format.dart';
 import '../theme.dart';
 import 'meta_chip.dart';
 
+/// Surlignage du mode entraînement : accord à jouer, accords déjà joués.
+class GridHighlight {
+  final Set<ChordRef> current;
+  final Set<ChordRef> done;
+
+  /// Accord que la grille fait défiler à l'écran quand il change.
+  final ChordRef? reveal;
+  final ValueChanged<ChordRef>? onTap;
+
+  const GridHighlight({
+    this.current = const {},
+    this.done = const {},
+    this.reveal,
+    this.onTap,
+  });
+}
+
 /// Rendu « grille gravée façon real book » : en-tête (tonalité + mesure),
 /// sections marquées d'un repère (A, B…) façon lettre de renvoi, mesures en
 /// cases régulières — N par ligne selon la largeur.
-class ChordGridView extends StatelessWidget {
+class ChordGridView extends StatefulWidget {
   final ChordChart chart;
-  const ChordGridView({super.key, required this.chart});
+  final GridHighlight? highlight;
+  const ChordGridView({super.key, required this.chart, this.highlight});
+
+  @override
+  State<ChordGridView> createState() => _ChordGridViewState();
+}
+
+class _ChordGridViewState extends State<ChordGridView> {
+  final _revealKey = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    _scheduleReveal();
+  }
+
+  @override
+  void didUpdateWidget(ChordGridView old) {
+    super.didUpdateWidget(old);
+    if (old.highlight?.reveal != widget.highlight?.reveal ||
+        !setEquals(old.highlight?.current, widget.highlight?.current)) {
+      _scheduleReveal();
+    }
+  }
+
+  void _scheduleReveal() {
+    if (widget.highlight?.reveal == null) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final ctx = _revealKey.currentContext;
+      if (ctx == null) return;
+      Scrollable.ensureVisible(
+        ctx,
+        alignment: 0.3,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    });
+  }
 
   int _barsPerRow(double width) {
     if (width >= 900) return 8; // tablette / paysage large
@@ -20,6 +76,7 @@ class ChordGridView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final chart = widget.chart;
     return LayoutBuilder(
       builder: (context, constraints) {
         final barsPerRow = _barsPerRow(constraints.maxWidth);
@@ -36,7 +93,10 @@ class ChordGridView extends StatelessWidget {
                   for (var s = 0; s < chart.sections.length; s++) ...[
                     _SectionBlock(
                       section: chart.sections[s],
+                      sectionIndex: s,
                       barsPerRow: barsPerRow,
+                      highlight: widget.highlight,
+                      revealKey: _revealKey,
                     ),
                     if (s != chart.sections.length - 1)
                       const SizedBox(height: 28),
@@ -70,8 +130,17 @@ class _ChartHeader extends StatelessWidget {
 /// Une section : repère (A, B…) + filet, puis la grille de mesures.
 class _SectionBlock extends StatelessWidget {
   final Section section;
+  final int sectionIndex;
   final int barsPerRow;
-  const _SectionBlock({required this.section, required this.barsPerRow});
+  final GridHighlight? highlight;
+  final GlobalKey revealKey;
+  const _SectionBlock({
+    required this.section,
+    required this.sectionIndex,
+    required this.barsPerRow,
+    required this.highlight,
+    required this.revealKey,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -81,7 +150,14 @@ class _SectionBlock extends StatelessWidget {
         i,
         (i + barsPerRow).clamp(0, section.bars.length),
       );
-      rows.add(_BarRow(bars: slice, barsPerRow: barsPerRow));
+      rows.add(_BarRow(
+        bars: slice,
+        barsPerRow: barsPerRow,
+        sectionIndex: sectionIndex,
+        firstBar: i,
+        highlight: highlight,
+        revealKey: revealKey,
+      ));
     }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -130,12 +206,32 @@ class _SectionMark extends StatelessWidget {
 class _BarRow extends StatelessWidget {
   final List<Bar> bars;
   final int barsPerRow;
-  const _BarRow({required this.bars, required this.barsPerRow});
+  final int sectionIndex;
+  final int firstBar;
+  final GridHighlight? highlight;
+  final GlobalKey revealKey;
+  const _BarRow({
+    required this.bars,
+    required this.barsPerRow,
+    required this.sectionIndex,
+    required this.firstBar,
+    required this.highlight,
+    required this.revealKey,
+  });
 
   @override
   Widget build(BuildContext context) {
     final cells = <Widget>[
-      for (final bar in bars) Expanded(child: _BarCell(bar: bar)),
+      for (var i = 0; i < bars.length; i++)
+        Expanded(
+          child: _BarCell(
+            bar: bars[i],
+            sectionIndex: sectionIndex,
+            barIndex: firstBar + i,
+            highlight: highlight,
+            revealKey: revealKey,
+          ),
+        ),
       // Cases vides pour aligner la dernière ligne.
       for (var i = bars.length; i < barsPerRow; i++)
         const Expanded(child: SizedBox()),
@@ -151,27 +247,57 @@ class _BarRow extends StatelessWidget {
 
 class _BarCell extends StatelessWidget {
   final Bar bar;
-  const _BarCell({required this.bar});
+  final int sectionIndex;
+  final int barIndex;
+  final GridHighlight? highlight;
+  final GlobalKey revealKey;
+  const _BarCell({
+    required this.bar,
+    required this.sectionIndex,
+    required this.barIndex,
+    required this.highlight,
+    required this.revealKey,
+  });
 
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
+    final h = highlight;
+    final refs = [
+      for (var c = 0; c < bar.chords.length; c++)
+        (section: sectionIndex, bar: barIndex, chord: c),
+    ];
+    final isCurrent = h != null && refs.any(h.current.contains);
     return Container(
+      key: h?.reveal != null && refs.contains(h!.reveal) ? revealKey : null,
       constraints: const BoxConstraints(minHeight: 68),
       decoration: BoxDecoration(
         color: p.surface,
-        border: Border.all(color: p.line),
+        border: Border.all(
+          color: isCurrent ? p.brass : p.line,
+          width: isCurrent ? 1.5 : 1,
+        ),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
       child: Center(
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            for (final chord in bar.chords)
+            for (var c = 0; c < bar.chords.length; c++)
               Flexible(
-                child: _ChordText(
-                  chord: chord,
-                  compact: bar.chords.length > 1,
+                child: _tappable(
+                  refs[c],
+                  _ChordText(
+                    chord: bar.chords[c],
+                    compact: bar.chords.length > 1,
+                    state: h == null
+                        ? _ChordState.normal
+                        : h.current.contains(refs[c])
+                            ? _ChordState.current
+                            : h.done.contains(refs[c])
+                                ? _ChordState.done
+                                : _ChordState.normal,
+                  ),
                 ),
               ),
           ],
@@ -179,13 +305,30 @@ class _BarCell extends StatelessWidget {
       ),
     );
   }
+
+  Widget _tappable(ChordRef ref, Widget child) {
+    final onTap = highlight?.onTap;
+    if (onTap == null) return child;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => onTap(ref),
+      child: child,
+    );
+  }
 }
+
+enum _ChordState { normal, current, done }
 
 /// Accord gravé : racine en serif, qualité en exposant, basse atténuée.
 class _ChordText extends StatelessWidget {
   final Chord chord;
   final bool compact;
-  const _ChordText({required this.chord, required this.compact});
+  final _ChordState state;
+  const _ChordText({
+    required this.chord,
+    required this.compact,
+    this.state = _ChordState.normal,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -206,14 +349,16 @@ class _ChordText extends StatelessWidget {
       );
     }
 
+    final current = state == _ChordState.current;
+    final ink = current ? p.onBrassTint : p.ink;
     final rootStyle = RubatoType.serif(
-        size: rootSize, weight: FontWeight.w600, color: p.ink);
+        size: rootSize, weight: FontWeight.w600, color: ink);
     final qualityStyle = RubatoType.serif(
-        size: rootSize * 0.58, weight: FontWeight.w600, color: p.ink);
+        size: rootSize * 0.58, weight: FontWeight.w600, color: ink);
     final bassStyle = RubatoType.serif(
         size: rootSize * 0.62, weight: FontWeight.w500, color: p.inkMuted);
 
-    return Text.rich(
+    final text = Text.rich(
       TextSpan(
         children: [
           TextSpan(text: parts.root, style: rootStyle),
@@ -232,5 +377,17 @@ class _ChordText extends StatelessWidget {
       textAlign: TextAlign.center,
       overflow: TextOverflow.visible,
     );
+    return switch (state) {
+      _ChordState.normal => text,
+      _ChordState.done => Opacity(opacity: 0.35, child: text),
+      _ChordState.current => Container(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+          decoration: BoxDecoration(
+            color: p.brassTint,
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: text,
+        ),
+    };
   }
 }

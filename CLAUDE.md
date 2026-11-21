@@ -11,8 +11,9 @@ Rien n'est installé sur l'hôte : Flutter tourne dans le conteneur
 
 ```bash
 make web        # serveur web (voir port ci-dessous)
-make apk        # APK Android release
+make apk        # APK Android release (signé avec la clé stable, build n° croissant)
 make apk-telegram   # build APK + envoi Telegram (config dans .env)
+make release NOTES="…"   # publier une mise à jour : l'appli la propose d'elle-même
 make api-run    # backend Go de recherche → http://localhost:8091
 make search creep radiohead   # recherche via le backend Go, résumé lisible
 make api-deploy # déployer le backend sur Fly.io (cf. backend/README.md)
@@ -49,10 +50,14 @@ Tout est centralisé dans `lib/src/ui/theme.dart` (`RubatoPalette`, `RubatoType`
   `search_cache.dart` sur `local_db.dart` (+ `_io`/`_web`/`_stub`) pour le cache,
   `key_value_store.dart` (contrat du stockage), `lyrics_store.dart` /
   `user_library_store.dart` (+ `_io`/`_web`/`_stub`, persistance locale).
+- `lib/src/audio/` : reconnaissance d'accords au micro, **Dart pur** (testable
+  sans micro) sauf `mic_input.dart` (paquet `record`). Cf. section dédiée.
 - `lib/src/ui/` : `library_screen.dart`, `chart_screen.dart` (sélecteur 3 vues
   **Grille · Paroles · Mélodie**), `online_search_screen.dart` (recherche en ligne),
-  `widgets/` (`chord_grid_view`, `lyric_sheet_view`, `lyrics_pane`, `score_view`,
-  `meta_chip`).
+  `listen_screen.dart` (écoute au micro), `practice_view.dart` (entraînement
+  sur la grille), `widgets/` (`chord_grid_view`, `lyric_sheet_view`,
+  `lyrics_pane`, `score_view`, `meta_chip`, `pill_toggle`, `listening_widgets`,
+  `update_banner`).
 - `backend/` : **backend Go** de recherche en ligne (stdlib pure, zéro dépendance).
   Voir [`backend/README.md`](backend/README.md).
 
@@ -110,6 +115,64 @@ Détails complets dans [`backend/README.md`](backend/README.md) ; l'essentiel :
   (`.github/workflows/deploy-backend.yml`, secret `FLY_API_TOKEN`, jeton créé par
   `make api-token`). Détails, coûts et limites :
   [`backend/README.md`](backend/README.md).
+
+## Écouter : accord joué reconnu au micro
+
+Écran `listen_screen.dart` (icône « onde » dans la barre de la Bibliothèque),
+et mode entraînement sur la grille d'un morceau (voir plus bas).
+Chaîne dans `lib/src/audio/`, sans dépendance native hors capture :
+
+- `mic_input.dart` : `record` en flux PCM 16 bits mono (44,1 kHz Android, 48 kHz
+  web), **AGC / anti-écho / anti-bruit coupés** (ils abîment la musique), source
+  Android `unprocessed`. `pcm.dart` : décodage + sous-échantillonnage filtré.
+- `chord_detector.dart` : ramène à ~11 kHz, fenêtre 4096 (~0,37 s), pas ~46 ms ;
+  seuil de niveau (dBFS, réglable) ; stabilisation (3 trames d'affilée + marge)
+  et accord gardé pendant les silences.
+- `chroma.dart` : FFT (`fftea`) → pics nets (plancher = **médiane** locale) →
+  **NNLS** (notes × modèle d'harmoniques, à la Chordino) → chroma 12 classes +
+  basse (note la plus grave présente) + accordage estimé (`TuningTracker`).
+- `chord_matcher.dart` / `chord_vocabulary.dart` : corrélation à des gabarits
+  (12 fondamentales × qualités au vocabulaire iReal), bonus basse = fondamentale,
+  renversements (`C/E`). Vocabulaires Simple / Standard / Jazz.
+- **Tests** (`test/audio/`) sur signaux **synthétiques** (piano additif, guitare
+  Karplus-Strong à pente réaliste) : pas d'enregistrement réel dans le dépôt.
+  Limite connue : une 7e portée par une seule corde est parfois lue comme la
+  triade. Réglages issus d'un balayage sur ce corpus ; à revoir sur vrais sons.
+- `listening_controller.dart` : micro + détecteur + cycle de vie (autorisation,
+  wakelock, coupure en arrière-plan), partagé par l'écran Écouter et le mode
+  entraînement ; widgets communs dans `ui/widgets/listening_widgets.dart`.
+- **Mode entraînement** (bouton « onde » de l'écran morceau, vue Grille) :
+  `practice.dart` (Dart pur) + `ui/practice_view.dart`. Les accords de la grille
+  deviennent des étapes (doublons consécutifs fusionnés, N.C. sautés) ; une
+  étape est validée quand l'accord attendu est entendu ~5 trames d'affilée, puis
+  on passe à la suivante. Jugement **tolérant** : même fondamentale + même
+  *famille* (maj/min/dim/aug/sus, extensions ignorées), et il suffit que
+  l'accord attendu soit à `tolerance` près du meilleur candidat
+  (`ListeningFrame.candidates`). Deux étapes équivalentes à l'oreille (C puis
+  C7) exigent une **nouvelle attaque** (remontée de niveau). La grille surligne
+  l'accord courant, estompe les joués, défile seule ; toucher un accord y saute.
+- Le web n'a le micro qu'en **https ou localhost** (`make web` sur
+  localhost:8090 : OK ; IP LAN : non). `wakelock_plus` garde l'écran allumé.
+
+## Mises à jour de l'appli Android (hors Play Store)
+
+- **Clé de signature stable** : `android/app/rubato-release.jks` +
+  `android/key.properties` (git-ignorés, créés une fois par `make keystore`,
+  copie de secours dans `~/.config/rubato/signing/`). ⚠️ **Ne jamais la
+  régénérer ni la perdre** : Android refuse une mise à jour signée par une autre
+  clé (il faudrait désinstaller, données locales perdues). Sans `key.properties`,
+  Gradle retombe sur la clé de debug, régénérée à chaque conteneur.
+- **N° de build** = minutes depuis 2024-01-01 UTC (`BUILD_NUMBER` du Makefile),
+  toujours croissant ; la version affichée reste celle de `pubspec.yaml`.
+- **`make release NOTES="…"`** : build + `scripts/publish-release.sh` (sur
+  l'hôte, via `gh`) → release GitHub unique **`android-latest`** dont on remplace
+  l'APK et `latest.json` (`{version, build, url, sha256, notes}`).
+- **Côté appli** : `app_update_service.dart` lit `latest.json` au lancement
+  (Android seulement, échec silencieux) ; `widgets/update_banner.dart` en haut de
+  la Bibliothèque → téléchargement (`ota_update`, sha256 vérifié) → installeur
+  d'Android, qui demande **toujours** une confirmation (impossible autrement hors
+  Play Store). Manifest : `REQUEST_INSTALL_PACKAGES` + `FileProvider`
+  (`res/xml/filepaths.xml`). URL surchargeable par `--dart-define=RUBATO_UPDATE_URL`.
 
 ## Représentations & contenu
 

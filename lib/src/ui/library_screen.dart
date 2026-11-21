@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import '../data/library_repository.dart';
 import '../domain/song.dart';
 import 'chart_screen.dart';
+import 'listen_screen.dart';
 import 'online_search_screen.dart';
 import 'theme.dart';
+import 'widgets/update_banner.dart';
 
 /// Écran bibliothèque : table des matières du carnet + recherche.
 class LibraryScreen extends StatefulWidget {
@@ -58,6 +60,14 @@ class _LibraryScreenState extends State<LibraryScreen> {
         title: const _Wordmark(),
         actions: [
           IconButton(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const ListenScreen()),
+            ),
+            icon: const Icon(Icons.graphic_eq),
+            color: p.brass,
+            tooltip: 'Écouter : reconnaître l\'accord joué',
+          ),
+          IconButton(
             onPressed: _openOnlineSearch,
             icon: const Icon(Icons.travel_explore),
             color: p.brass,
@@ -70,71 +80,80 @@ class _LibraryScreenState extends State<LibraryScreen> {
           child: Container(height: 1, color: p.line),
         ),
       ),
-      body: FutureBuilder<List<Song>>(
-        future: _songsFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState != ConnectionState.done) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(child: Text('Erreur : ${snapshot.error}'));
-          }
-          final songs = _filter(snapshot.data!);
-          return Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
-                child: TextField(
-                  decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.search, size: 20),
-                    hintText: 'Rechercher un morceau, un artiste…',
+      body: Column(
+        children: [
+          const UpdateBanner(),
+          Expanded(child: _songs(p)),
+        ],
+      ),
+    );
+  }
+
+  Widget _songs(RubatoPalette p) {
+    return FutureBuilder<List<Song>>(
+      future: _songsFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return Center(child: Text('Erreur : ${snapshot.error}'));
+        }
+        final songs = _filter(snapshot.data!);
+        return Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+              child: TextField(
+                decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.search, size: 20),
+                  hintText: 'Rechercher un morceau, un artiste…',
+                ),
+                onChanged: (v) => setState(() => _query = v),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
+              child: Row(
+                children: [
+                  Text(
+                    songs.length.toString().padLeft(2, '0'),
+                    style: RubatoType.caption(p.brass),
                   ),
-                  onChanged: (v) => setState(() => _query = v),
-                ),
+                  const SizedBox(width: 8),
+                  Text(
+                    songs.length > 1 ? 'MORCEAUX' : 'MORCEAU',
+                    style: RubatoType.caption(p.inkMuted),
+                  ),
+                ],
               ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
-                child: Row(
-                  children: [
-                    Text(
-                      songs.length.toString().padLeft(2, '0'),
-                      style: RubatoType.caption(p.brass),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      songs.length > 1 ? 'MORCEAUX' : 'MORCEAU',
-                      style: RubatoType.caption(p.inkMuted),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: songs.isEmpty
-                    ? Center(
-                        child: Text('Aucun morceau.',
-                            style: TextStyle(color: p.inkMuted)),
-                      )
-                    : ListView.builder(
-                        padding: const EdgeInsets.only(bottom: 24),
-                        itemCount: songs.length,
-                        itemBuilder: (context, i) => _SongTile(
-                          index: i + 1,
-                          song: songs[i],
-                          onTap: () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => ChartScreen(
-                                song: songs[i],
-                                repository: _repository,
-                              ),
+            ),
+            Expanded(
+              child: songs.isEmpty
+                  ? Center(
+                      child: Text('Aucun morceau.',
+                          style: TextStyle(color: p.inkMuted)),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.only(bottom: 24),
+                      itemCount: songs.length,
+                      itemBuilder: (context, i) => _SongTile(
+                        index: i + 1,
+                        song: songs[i],
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => ChartScreen(
+                              song: songs[i],
+                              repository: _repository,
                             ),
                           ),
                         ),
                       ),
-              ),
-            ],
-          );
-        },
-      ),
+                    ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
