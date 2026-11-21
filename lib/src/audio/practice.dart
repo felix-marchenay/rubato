@@ -43,8 +43,10 @@ class ChordExpectation {
     final family = familyOf(q);
     return ChordExpectation(root.value, {
       family,
-      // Accord de puissance (C5) : ni majeur ni mineur.
-      if (q == '5') ...[ChordFamily.major, ChordFamily.minor],
+      // Accord de puissance (C5) : ni majeur ni mineur, et le 3e harmonique
+      // de la quinte (un Ré pour C5) le fait souvent sonner « sus2 ».
+      if (q == '5')
+        ...[ChordFamily.major, ChordFamily.minor, ChordFamily.suspended],
       // Un accord augmenté s'entend souvent comme majeur (la quinte bouge).
       if (family == ChordFamily.augmented) ChordFamily.major,
       // C11 se joue souvent sans tierce.

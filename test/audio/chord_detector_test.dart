@@ -136,6 +136,49 @@ void main() {
     );
   });
 
+  group('une note seule n\'est pas un accord', () {
+    const cases = {
+      'xxx0xx': 'Sol3 à vide',
+      '3xxxxx': 'Sol2, riche en harmoniques',
+      'xxxxx3': 'Sol4',
+      'x0x2xx': 'octave La',
+    };
+    for (final e in cases.entries) {
+      test(e.value, () {
+        final frames = run(guitarStrum(e.key, seconds: 1.5));
+        expect(frames.where((f) => f.chord != null), isEmpty);
+        expect(frames.every((f) => f.candidates.isEmpty), isTrue);
+      });
+    }
+  });
+
+  group('rémanence', () {
+    // Do égrené lentement, corde par corde, une note toutes les 0,6 s.
+    final arpeggio = guitarStrum('x32010', strumDelay: 0.6, seconds: 3.5);
+
+    List<ListeningFrame> runWith(double remanence) {
+      final d = ChordDetector(sampleRate: 44100, remanenceSeconds: remanence);
+      final frames = <ListeningFrame>[];
+      for (var i = 0; i < arpeggio.length; i += 2048) {
+        frames.addAll(d.add(arpeggio.sublist(
+            i, (i + 2048).clamp(0, arpeggio.length))));
+      }
+      return frames;
+    }
+
+    test('longue : l\'arpège est reconnu comme un accord', () {
+      final chord = runWith(4).last.chord;
+      // La basse, jouée en premier, s'est beaucoup éteinte : on ne juge que
+      // l'accord, pas son renversement.
+      expect(chord?.root, 0);
+      expect(chord?.quality, '');
+    });
+
+    test('courte : seules les notes fraîches comptent, pas d\'accord', () {
+      expect(runWith(0.15).where((f) => f.chord != null), isEmpty);
+    });
+  });
+
   test('silence : aucun signal, aucun accord', () {
     final frames = run(Float64List(44100));
     expect(frames, isNotEmpty);

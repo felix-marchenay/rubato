@@ -1,18 +1,17 @@
 import 'dart:math' as math;
 import 'dart:typed_data';
 
-import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/material.dart';
 
 import '../audio/chord_detector.dart';
 import '../audio/chord_matcher.dart';
-import '../audio/chord_vocabulary.dart';
+import '../audio/chord_vocabulary.dart' show pitchClassNames;
 import '../audio/listening_controller.dart';
 import '../domain/chord_chart.dart';
 import 'chord_format.dart';
 import 'theme.dart';
+import 'widgets/listening_settings_sheet.dart';
 import 'widgets/listening_widgets.dart';
-import 'widgets/pill_toggle.dart';
 
 /// Écran « Écouter » : le micro entend la musique jouée, l'écran affiche
 /// l'accord reconnu, les notes perçues et les derniers accords.
@@ -52,31 +51,7 @@ class _ListenScreenState extends State<ListenScreen> {
     }
   }
 
-  void _setVocabulary(ChordVocabulary v) {
-    setState(() {
-      _listening.detector.vocabulary = v;
-      _lastShown = null;
-    });
-  }
-
-  Future<void> _openSettings() => showModalBottomSheet<void>(
-        context: context,
-        backgroundColor: context.palette.paper,
-        showDragHandle: true,
-        builder: (_) => StatefulBuilder(
-          builder: (context, setSheetState) => _SettingsSheet(
-            vocabulary: _listening.detector.vocabulary,
-            gateDb: _listening.detector.gateDb,
-            frame: _listening.frame,
-            onVocabulary: (v) {
-              _setVocabulary(v);
-              setSheetState(() {});
-            },
-            onGate: (db) =>
-                setSheetState(() => _listening.detector.gateDb = db),
-          ),
-        ),
-      );
+  Future<void> _openSettings() => showListeningSettings(context, _listening);
 
   @override
   Widget build(BuildContext context) {
@@ -396,92 +371,3 @@ class _History extends StatelessWidget {
     );
   }
 }
-
-class _SettingsSheet extends StatelessWidget {
-  final ChordVocabulary vocabulary;
-  final double gateDb;
-  final ValueListenable<ListeningFrame?> frame;
-  final ValueChanged<ChordVocabulary> onVocabulary;
-  final ValueChanged<double> onGate;
-
-  const _SettingsSheet({
-    required this.vocabulary,
-    required this.gateDb,
-    required this.frame,
-    required this.onVocabulary,
-    required this.onGate,
-  });
-
-  static const _vocabularyHelp = {
-    ChordVocabulary.simple: 'Accords majeurs et mineurs.',
-    ChordVocabulary.standard: 'Plus les 7e (7, maj7, m7), sus2, sus4 et dim.',
-    ChordVocabulary.jazz: 'Plus 6, m6, ø, °7, aug et 7sus. Les confusions '
-        'deviennent plus fréquentes (C6 et Am7 ont les mêmes notes).',
-  };
-
-  @override
-  Widget build(BuildContext context) {
-    final p = context.palette;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Réglages de l\'écoute',
-              style: RubatoType.serif(size: 20, color: p.ink)),
-          const SizedBox(height: 20),
-          Text('ACCORDS RECHERCHÉS', style: RubatoType.caption(p.inkMuted)),
-          const SizedBox(height: 10),
-          PillToggle<ChordVocabulary>(
-            value: vocabulary,
-            options: {for (final v in ChordVocabulary.values) v: v.label},
-            onChanged: onVocabulary,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            _vocabularyHelp[vocabulary]!,
-            style: TextStyle(color: p.inkMuted, fontSize: 13, height: 1.4),
-          ),
-          const SizedBox(height: 24),
-          Text('SENSIBILITÉ', style: RubatoType.caption(p.inkMuted)),
-          Slider(
-            min: 35,
-            max: 75,
-            value: -gateDb,
-            onChanged: (v) => onGate(-v),
-          ),
-          ValueListenableBuilder<ListeningFrame?>(
-            valueListenable: frame,
-            builder: (context, f, _) => Row(
-              children: [
-                Expanded(
-                  child: LevelMeter(
-                    levelDb: f?.levelDb ?? -120,
-                    gateDb: gateDb,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                SizedBox(
-                  width: 120,
-                  child: Text(
-                    (f?.hasSignal ?? false) ? 'son entendu' : 'sous le seuil',
-                    style: TextStyle(color: p.inkMuted, fontSize: 13),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Le trait marque le seuil : en dessous, l\'écran garde le dernier '
-            'accord. Monte la sensibilité si l\'instrument est loin, baisse-la '
-            'dans un lieu bruyant.',
-            style: TextStyle(color: p.inkMuted, fontSize: 13, height: 1.4),
-          ),
-        ],
-      ),
-    );
-  }
-}
-

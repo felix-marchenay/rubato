@@ -112,6 +112,7 @@ class ChordDetector {
     required int sampleRate,
     ChordVocabulary vocabulary = ChordVocabulary.standard,
     this.gateDb = -55,
+    double remanenceSeconds = 1.2,
   })  : _decimator = Decimator(math.max(1, (sampleRate / 11025).round())),
         _vocabulary = vocabulary,
         _matcher = ChordMatcher(vocabulary) {
@@ -121,7 +122,15 @@ class ChordDetector {
     _ring = Float64List(frameSize);
     _frame = Float64List(frameSize);
     _analyzer = ChromaAnalyzer(sampleRate: analysisRate, frameSize: frameSize);
+    _remanence = NoteRemanence(
+      _analyzer.noteSlots,
+      hopSeconds: hopSize / analysisRate,
+      seconds: remanenceSeconds,
+    );
   }
+
+  /// Moins de notes distinctes que ça, ce n'est pas un accord.
+  static const minNotes = 3;
 
   final Decimator _decimator;
   late final double analysisRate;
@@ -130,6 +139,7 @@ class ChordDetector {
   late final Float64List _ring;
   late final Float64List _frame;
   late final ChromaAnalyzer _analyzer;
+  late final NoteRemanence _remanence;
   final _tuning = TuningTracker();
   final _stabilizer = ChordStabilizer();
   final _smoothed = Float64List(12);
@@ -139,6 +149,11 @@ class ChordDetector {
 
   ChordVocabulary _vocabulary;
   ChordMatcher _matcher;
+
+  /// Durée (s) pendant laquelle une note jouée continue de compter, cf.
+  /// [NoteRemanence].
+  double get remanenceSeconds => _remanence.seconds;
+  set remanenceSeconds(double s) => _remanence.seconds = s;
 
   ChordVocabulary get vocabulary => _vocabulary;
   set vocabulary(ChordVocabulary v) {
@@ -181,12 +196,16 @@ class ChordDetector {
       for (var i = 0; i < frameSize; i++) {
         _frame[i] = _ring[(_writePos + i) % frameSize];
       }
-      final raw = _analyzer.analyze(_frame, tuningCents: _tuning.cents);
+      final notes = _analyzer.estimateNotes(_frame, tuningCents: _tuning.cents);
+      _remanence.apply(notes.levels);
+      final raw = _analyzer.summarize(notes);
       if (!raw.isEmpty) _tuning.add(raw);
       for (var i = 0; i < 12; i++) {
         _smoothed[i] = 0.5 * _smoothed[i] + 0.5 * raw.chroma[i];
       }
-      ranked = raw.isEmpty
+      // Une note seule (ou une quinte) n'est pas un accord, même si elle
+      // ressemble à l'un d'eux plus qu'aux autres.
+      ranked = raw.noteCount < minNotes
           ? const <ChordCandidate>[]
           : _matcher.rank(ChromaFrame(
               chroma: _smoothed,
@@ -219,6 +238,7 @@ class ChordDetector {
     _ring.fillRange(0, frameSize, 0);
     _smoothed.fillRange(0, 12, 0);
     _tuning.reset();
+    _remanence.reset();
     _stabilizer.reset();
   }
 }

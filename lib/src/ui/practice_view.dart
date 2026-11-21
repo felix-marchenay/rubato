@@ -8,6 +8,7 @@ import '../domain/chord_chart.dart';
 import 'chord_format.dart';
 import 'theme.dart';
 import 'widgets/chord_grid_view.dart';
+import 'widgets/listening_settings_sheet.dart';
 import 'widgets/listening_widgets.dart';
 
 /// Mode entraînement : la grille du morceau, et un panneau qui écoute ce
@@ -22,7 +23,8 @@ class PracticeView extends StatefulWidget {
 
 class _PracticeViewState extends State<PracticeView> {
   late final _session = PracticeSession(practiceSteps(widget.chart));
-  late final _listening = ListeningController(onFrame: _onFrame);
+  late final _listening =
+      ListeningController(onFrame: _onFrame, usesVocabulary: false);
 
   /// Du premier accord validé au dernier.
   final _stopwatch = Stopwatch();
@@ -98,6 +100,11 @@ class _PracticeViewState extends State<PracticeView> {
               elapsed: _stopwatch.elapsed,
               onToggleMic: _listening.toggle,
               onRetryMic: _listening.start,
+              onSettings: () => showListeningSettings(
+                context,
+                _listening,
+                showVocabulary: false,
+              ),
               onRestart: () => _jumpTo(0),
               onPrevious: () => _jumpTo(_session.index - 1),
               onNext: () => _jumpTo(_session.index + 1),
@@ -119,6 +126,7 @@ class PracticePanel extends StatelessWidget {
   final Duration elapsed;
   final VoidCallback onToggleMic;
   final VoidCallback onRetryMic;
+  final VoidCallback onSettings;
   final VoidCallback onRestart;
   final VoidCallback onPrevious;
   final VoidCallback onNext;
@@ -132,6 +140,7 @@ class PracticePanel extends StatelessWidget {
     required this.elapsed,
     required this.onToggleMic,
     required this.onRetryMic,
+    required this.onSettings,
     required this.onRestart,
     required this.onPrevious,
     required this.onNext,
@@ -319,6 +328,11 @@ class PracticePanel extends StatelessWidget {
             onPressed: session.finished ? null : onNext,
             icon: const Icon(Icons.skip_next),
             tooltip: 'Passer cet accord',
+          ),
+          IconButton(
+            onPressed: onSettings,
+            icon: const Icon(Icons.tune),
+            tooltip: 'Sensibilité et rémanence',
           ),
         ],
       );

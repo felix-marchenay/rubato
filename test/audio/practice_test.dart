@@ -87,6 +87,33 @@ void main() {
     }
   });
 
+  test('une note de Sol seule ne valide ni Gsus4 ni G', () {
+    for (final expected in ['Gsus', 'G']) {
+      final session = PracticeSession(practiceSteps(chart([
+        [[expected]],
+      ])));
+      play(session, guitarStrum('xxx0xx', seconds: 1.5));
+      play(session, guitarStrum('3xxxxx', seconds: 1.5, seed: 2));
+      expect(session.index, 0, reason: expected);
+    }
+  });
+
+  test('un Sol joué pendant que le Do résonne ne valide pas G', () {
+    final session = PracticeSession(practiceSteps(chart([
+      [['C'], ['G']],
+    ])));
+    final c = guitarStrum('x32010', seconds: 2.5);
+    final g = guitarStrum('3xxxxx', seconds: 1.3, seed: 2);
+    // Le Sol grave arrive à 1,2 s, le Do continue de sonner par-dessus.
+    final mix = Float64List.fromList(c);
+    final at = (1.2 * 44100).round();
+    for (var i = 0; i < g.length && at + i < mix.length; i++) {
+      mix[at + i] += g[i];
+    }
+    play(session, mix);
+    expect(session.index, 1, reason: 'C validé, G pas encore');
+  });
+
   test('un mauvais accord ne valide rien', () {
     final session = PracticeSession(practiceSteps(chart([
       [['G'], ['C']],

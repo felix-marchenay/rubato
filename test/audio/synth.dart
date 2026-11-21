@@ -43,7 +43,8 @@ List<int> guitarShape(String frets) => [
         if (frets[s] != 'x') _openStrings[s] + int.parse(frets[s], radix: 16),
     ];
 
-/// Accord gratté (cordes décalées de 12 ms), synthèse Karplus-Strong.
+/// Accord gratté (cordes décalées de [strumDelay], 12 ms par défaut ; plus
+/// long pour un arpège), synthèse Karplus-Strong.
 /// Gain de boucle réglé pour que chaque corde résonne ~3 s, comme une vraie.
 /// L'excitation est filtrée pour que les harmoniques décroissent en ~1/h comme
 /// sur une corde pincée ; [bright] garde le bruit blanc d'origine (spectre
@@ -56,13 +57,14 @@ Float64List guitarStrum(
   double amplitude = 0.3,
   int seed = 1,
   bool bright = false,
+  double strumDelay = 0.012,
 }) {
   final rnd = math.Random(seed);
   final n = (sampleRate * seconds).round();
   final out = Float64List(n);
   final notes = guitarShape(frets);
   for (var s = 0; s < notes.length; s++) {
-    final start = (s * 0.012 * sampleRate).round();
+    final start = (s * strumDelay * sampleRate).round();
     // Boucle = ligne (len) + moyenneur (0,5) + passe-tout fractionnaire (frac).
     final period = sampleRate / midiToHz(notes[s], a4: a4) - 0.5;
     var len = period.floor();

@@ -25,9 +25,14 @@ class ChromaFrame {
   /// grave au plus aigu.
   final Float64List? notes;
 
+  /// Nombre de classes de hauteur distinctes nettement présentes : moins de
+  /// trois, ce n'est pas un accord (une note seule, une quinte).
+  final int noteCount;
+
   const ChromaFrame({
     required this.chroma,
     this.notes,
+    this.noteCount = 0,
     this.bassPitchClass,
     this.bassStrength = 0,
     this.tuningX = 0,
@@ -35,6 +40,16 @@ class ChromaFrame {
   });
 
   bool get isEmpty => chroma.every((v) => v == 0);
+}
+
+/// Notes estimées dans une fenêtre : présence linéaire (non normalisée, donc
+/// comparable d'une fenêtre à l'autre) de chaque note de la tessiture.
+class NoteEstimate {
+  final Float64List levels;
+  final double tuningX;
+  final double tuningY;
+
+  const NoteEstimate(this.levels, {this.tuningX = 0, this.tuningY = 0});
 }
 
 /// Spectre → notes présentes → chromagramme.
@@ -55,6 +70,7 @@ class ChromaAnalyzer {
     this.treblePartialDecay = 0.6,
     this.nnlsIterations = 40,
     this.compression = 10,
+    this.noteFloor = 0.1,
     this.bassThreshold = 0.28,
   })  : assert(frameSize & (frameSize - 1) == 0, 'puissance de 2 attendue'),
         _fft = FFT(frameSize),
@@ -89,6 +105,10 @@ class ChromaAnalyzer {
   /// Compression log de la présence des notes, pour qu'une basse puissante
   /// n'écrase pas les notes aiguës de l'accord.
   final double compression;
+
+  /// Une note plus faible que cette fraction de la plus forte est ignorée :
+  /// résidus d'harmoniques, cordes qui vibrent par sympathie.
+  final double noteFloor;
 
   /// Présence minimale (0..1) de la note la plus grave pour la tenir pour la
   /// basse. Bas, car le micro d'un téléphone restitue mal les fondamentales
@@ -127,6 +147,9 @@ class ChromaAnalyzer {
 
   int get _size => maxMidi - minMidi + 1;
 
+  /// Nombre de notes suivies (taille de [NoteEstimate.levels]).
+  int get noteSlots => _size;
+
   void _buildNoteModel() {
     final n = _size;
     final bins = _salience.length;
@@ -163,7 +186,11 @@ class ChromaAnalyzer {
 
   /// [frame] doit contenir exactement [frameSize] échantillons.
   /// [tuningCents] décale la grille des demi-tons (accordage estimé).
-  ChromaFrame analyze(List<double> frame, {double tuningCents = 0}) {
+  ChromaFrame analyze(List<double> frame, {double tuningCents = 0}) =>
+      summarize(estimateNotes(frame, tuningCents: tuningCents));
+
+  /// Première moitié de [analyze] : quelles notes sonnent, et à quel niveau.
+  NoteEstimate estimateNotes(List<double> frame, {double tuningCents = 0}) {
     final n = frameSize;
     var mean = 0.0;
     for (var i = 0; i < n; i++) {
@@ -189,8 +216,7 @@ class ChromaAnalyzer {
     for (var k = kMin; k <= kMax; k++) {
       if (_magnitudes[k] > maxMag) maxMag = _magnitudes[k];
     }
-    final empty = ChromaFrame(chroma: Float64List(12));
-    if (maxMag < 1e-9) return empty;
+    if (maxMag < 1e-9) return NoteEstimate(Float64List(_size));
 
     _salience.fillRange(0, _salience.length, 0);
     var tx = 0.0, ty = 0.0, tw = 0.0;
@@ -226,16 +252,34 @@ class ChromaAnalyzer {
       _salience[m - minMidi] += amp * w * w;
     }
 
-    final notes = _explainByNotes(_salience);
+    return NoteEstimate(
+      _explainByNotes(_salience),
+      tuningX: tw > 0 ? tx / tw : 0,
+      tuningY: tw > 0 ? ty / tw : 0,
+    );
+  }
+
+  /// Seconde moitié de [analyze] : notes → chroma, basse, nombre de notes.
+  ChromaFrame summarize(NoteEstimate estimate) {
+    final notes = Float64List.fromList(estimate.levels);
     var maxNote = 0.0;
     for (final v in notes) {
       if (v > maxNote) maxNote = v;
     }
-    if (maxNote <= 0) return empty;
+    if (maxNote <= 0) return ChromaFrame(chroma: Float64List(12));
 
     final norm = math.log(1 + compression);
+    var classes = 0;
     for (var i = 0; i < notes.length; i++) {
-      notes[i] = math.log(1 + compression * notes[i] / maxNote) / norm;
+      final x = notes[i] / maxNote;
+      if (x >= noteFloor && !_looksLikeHarmonic(estimate.levels, i)) {
+        classes |= 1 << ((minMidi + i) % 12);
+      }
+      notes[i] = x < noteFloor ? 0 : math.log(1 + compression * x) / norm;
+    }
+    var noteCount = 0;
+    for (; classes != 0; classes &= classes - 1) {
+      noteCount++;
     }
 
     final chroma = Float64List(12);
@@ -268,11 +312,29 @@ class ChromaAnalyzer {
     return ChromaFrame(
       chroma: chroma,
       notes: notes,
+      noteCount: noteCount,
       bassPitchClass: bass,
       bassStrength: bassStrength,
-      tuningX: tw > 0 ? tx / tw : 0,
-      tuningY: tw > 0 ? ty / tw : 0,
+      tuningX: estimate.tuningX,
+      tuningY: estimate.tuningY,
     );
+  }
+
+  /// Harmoniques 5 (tierce majeure deux octaves au-dessus) et 7 (septième
+  /// mineure) : leur résidu reste faible, alors qu'une vraie note à cette place
+  /// pèse nettement plus. (La quinte, harmonique 3, ne se laisse pas trancher
+  /// ainsi : résidu et vraie note s'y chevauchent.)
+  static const _ghosts = [(28, 0.3), (34, 0.3)];
+
+  /// La note [i] pourrait n'être qu'un harmonique d'une note plus grave
+  /// nettement plus forte : un Sol seul laisse un peu de Si, et Sol-Ré-Si
+  /// formerait un accord. On ne la compte pas pour décider si c'est un accord.
+  static bool _looksLikeHarmonic(Float64List levels, int i) {
+    for (final (offset, ratio) in _ghosts) {
+      final j = i - offset;
+      if (j >= 0 && levels[i] <= ratio * levels[j]) return true;
+    }
+    return false;
   }
 
   /// Médiane des amplitudes sur ±1/6 d'octave autour de la case [k]
@@ -334,6 +396,55 @@ class ChromaAnalyzer {
       w[i] = 0.5 - 0.5 * math.cos(2 * math.pi * i / (n - 1));
     }
     return w;
+  }
+}
+
+/// Rémanence : une note pèse de moins en moins à mesure que le temps passe
+/// depuis qu'elle a été jouée. Les notes d'un accord précédent qui résonnent
+/// encore s'effacent ainsi devant celles qu'on vient de jouer. Une rémanence
+/// courte ne retient que les notes fraîches ; une longue laisse le temps
+/// d'égrener un accord en arpège.
+class NoteRemanence {
+  NoteRemanence(int notes, {required this.hopSeconds, this.seconds = 1.2})
+      : _trough = Float64List(notes),
+        _age = Float64List(notes);
+
+  /// Durée d'une trame d'analyse.
+  final double hopSeconds;
+
+  /// Constante de temps (s) : après ce délai sans nouvelle attaque, une note
+  /// ne pèse plus que 37 % ; après le double, 14 %.
+  double seconds;
+
+  /// Remontée (× niveau le plus bas depuis la dernière attaque) qui signale
+  /// une nouvelle attaque de la note.
+  static const _attackRise = 1.5;
+
+  final Float64List _trough;
+  final Float64List _age;
+
+  /// Pondère [levels] (présence linéaire des notes) en place.
+  void apply(Float64List levels) {
+    var loudest = 0.0;
+    for (final l in levels) {
+      if (l > loudest) loudest = l;
+    }
+    for (var j = 0; j < levels.length; j++) {
+      final a = levels[j];
+      if (a > _attackRise * _trough[j] && a > 0.05 * loudest) {
+        _age[j] = 0;
+        _trough[j] = a;
+      } else {
+        _age[j] += hopSeconds;
+        if (a < _trough[j]) _trough[j] = a;
+      }
+      levels[j] = a * math.exp(-_age[j] / seconds);
+    }
+  }
+
+  void reset() {
+    _trough.fillRange(0, _trough.length, 0);
+    _age.fillRange(0, _age.length, 0);
   }
 }
 

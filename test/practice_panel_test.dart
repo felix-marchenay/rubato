@@ -42,6 +42,7 @@ void main() {
             elapsed: const Duration(seconds: 75),
             onToggleMic: () {},
             onRetryMic: () {},
+            onSettings: () {},
             onRestart: () {},
             onPrevious: () {},
             onNext: () {},

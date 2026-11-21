@@ -4,23 +4,58 @@ import 'dart:typed_data';
 import 'package:flutter/widgets.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
+import '../data/listening_settings_store.dart';
 import 'chord_detector.dart';
-import 'chord_vocabulary.dart';
 import 'mic_input.dart';
 
 enum MicStatus { idle, starting, listening, denied, failed }
 
 /// Micro + détecteur d'accords, avec le cycle de vie qui va autour :
 /// autorisation, écran gardé allumé pendant l'écoute, coupure quand l'appli
-/// passe en arrière-plan et reprise au retour.
+/// passe en arrière-plan et reprise au retour, réglages mémorisés.
 class ListeningController extends ChangeNotifier with WidgetsBindingObserver {
   ListeningController({
-    ChordVocabulary vocabulary = ChordVocabulary.standard,
     this.onFrame,
-  }) {
-    detector = ChordDetector(sampleRate: _mic.sampleRate, vocabulary: vocabulary);
+    this.usesVocabulary = true,
+    ListeningSettingsStore settingsStore = const ListeningSettingsStore(),
+  }) : _store = settingsStore {
+    detector = ChordDetector(sampleRate: _mic.sampleRate);
+    _apply(_settings);
     WidgetsBinding.instance.addObserver(this);
   }
+
+  /// Faux pour le mode entraînement : il juge l'accord attendu avec le
+  /// vocabulaire standard, quel que soit celui choisi sur l'écran Écouter.
+  final bool usesVocabulary;
+  final ListeningSettingsStore _store;
+  ListeningSettings _settings = const ListeningSettings();
+  Future<void>? _loading;
+  bool _touched = false;
+
+  ListeningSettings get settings => _settings;
+
+  /// Applique et mémorise de nouveaux réglages.
+  void updateSettings(ListeningSettings settings) {
+    _touched = true;
+    _settings = settings;
+    _apply(settings);
+    _store.write(settings);
+    notifyListeners();
+  }
+
+  void _apply(ListeningSettings s) {
+    detector
+      ..gateDb = s.gateDb
+      ..remanenceSeconds = s.remanenceSeconds;
+    if (usesVocabulary) detector.vocabulary = s.vocabulary;
+  }
+
+  Future<void> _loadSettings() => _loading ??= _store.read().then((s) {
+        if (_disposed || _touched) return;
+        _settings = s;
+        _apply(s);
+        notifyListeners();
+      });
 
   final _mic = MicInput();
   late final ChordDetector detector;
@@ -51,6 +86,7 @@ class ListeningController extends ChangeNotifier with WidgetsBindingObserver {
   Future<void> start() async {
     if (_disposed || _status == MicStatus.starting || isListening) return;
     _setStatus(MicStatus.starting);
+    await _loadSettings();
     try {
       if (!await _mic.requestPermission()) {
         _setStatus(MicStatus.denied);
