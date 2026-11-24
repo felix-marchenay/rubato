@@ -136,20 +136,40 @@ void main() {
     );
   });
 
-  group('une note seule n\'est pas un accord', () {
+  group('une note seule n\'est pas un accord : on affiche la note', () {
+    // (position, note MIDI attendue) : la note jouée, à la bonne octave.
     const cases = {
-      'xxx0xx': 'Sol3 à vide',
-      '3xxxxx': 'Sol2, riche en harmoniques',
-      'xxxxx3': 'Sol4',
-      'x0x2xx': 'octave La',
+      'xxx0xx': ('Sol3 à vide', 55),
+      '3xxxxx': ('Sol2, riche en harmoniques', 43),
+      'xxxxx3': ('Sol4', 67),
+      'x0x2xx': ('octave La : la plus grave', 45),
     };
     for (final e in cases.entries) {
-      test(e.value, () {
+      test(e.value.$1, () {
         final frames = run(guitarStrum(e.key, seconds: 1.5));
         expect(frames.where((f) => f.chord != null), isEmpty);
         expect(frames.every((f) => f.candidates.isEmpty), isTrue);
+        expect(frames.last.note, e.value.$2);
       });
     }
+
+    test('un accord remplace la note affichée, et inversement', () {
+      final d = ChordDetector(sampleRate: 44100);
+      final afterNote = d.add(guitarStrum('xxx0xx', seconds: 1.2)).last;
+      expect(afterNote.note, 55);
+      expect(afterNote.chord, isNull);
+      final afterChord = d.add(guitarStrum('x32010', seconds: 1.2, seed: 2)).last;
+      expect(afterChord.chord?.toChord().raw, 'C');
+      expect(afterChord.note, isNull);
+      final afterLow = d.add(guitarStrum('3xxxxx', seconds: 1.2, seed: 3)).last;
+      expect(afterLow.note, 43);
+      expect(afterLow.chord, isNull);
+    });
+
+    test('un accord gratté n\'est jamais pris pour une note', () {
+      final frames = run(guitarStrum('320003', seconds: 1.5));
+      expect(frames.where((f) => f.note != null), isEmpty);
+    });
   });
 
   group('rémanence', () {

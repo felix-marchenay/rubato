@@ -20,9 +20,17 @@ class ListeningFrame {
   /// Accord stabilisé, celui à afficher. Reste en place pendant les silences.
   final ChordCandidate? chord;
 
+  /// Note jouée seule (MIDI), stabilisée comme l'accord. Accord et note ne
+  /// sont jamais là ensemble : c'est le dernier confirmé qui reste affiché.
+  final int? note;
+
   /// Tous les accords du vocabulaire classés pour cette seule fenêtre (vide
-  /// pendant un silence) : pour juger un accord attendu (mode entraînement).
+  /// pendant un silence, ou s'il n'y a pas assez de notes pour un accord).
   final List<ChordCandidate> candidates;
+
+  /// Classes de hauteur nettement présentes dans cette fenêtre (bit i =
+  /// classe i) : pour vérifier note à note un accord attendu (entraînement).
+  final int pitchClasses;
 
   /// Accordage estimé (écart au La 440, en cents).
   final double tuningCents;
@@ -32,7 +40,9 @@ class ListeningFrame {
     required this.levelDb,
     required this.hasSignal,
     required this.chord,
+    this.note,
     this.candidates = const [],
+    this.pitchClasses = 0,
     required this.tuningCents,
   });
 }
@@ -165,6 +175,10 @@ class ChordDetector {
   /// Part du chroma précédent gardée à chaque trame (lissage).
   late final double _keep;
 
+  int? _note;
+  int? _pendingNote;
+  int _pendingNoteCount = 0;
+
   /// Seuil de niveau (dBFS) sous lequel on considère qu'il n'y a pas de son.
   double gateDb;
 
@@ -212,6 +226,7 @@ class ChordDetector {
     final hasSignal = levelDb >= gateDb;
     ChordCandidate? chord;
     var ranked = const <ChordCandidate>[];
+    var classes = 0;
 
     if (hasSignal) {
       for (var i = 0; i < frameSize; i++) {
@@ -220,25 +235,31 @@ class ChordDetector {
       final notes = _analyzer.estimateNotes(_frame, tuningCents: _tuning.cents);
       _remanence.apply(notes);
       final raw = _analyzer.summarize(notes);
+      classes = raw.presentClasses;
       if (!raw.isEmpty) _tuning.add(raw);
       for (var i = 0; i < 12; i++) {
         _smoothed[i] = _keep * _smoothed[i] + (1 - _keep) * raw.chroma[i];
       }
       // Une note seule (ou une quinte) n'est pas un accord, même si elle
       // ressemble à l'un d'eux plus qu'aux autres.
-      ranked = raw.noteCount < minNotes
+      ranked = raw.noteCount < minNotes || raw.soloNote != null
           ? const <ChordCandidate>[]
           : _matcher.rank(ChromaFrame(
               chroma: _smoothed,
               bassPitchClass: raw.bassPitchClass,
               bassStrength: raw.bassStrength,
             ));
+      final before = _stabilizer.current;
       chord = _stabilizer.update(ranked);
+      if (chord != null && !identical(chord, before)) _note = null;
+      _trackNote(raw.soloNote);
+      if (_note != null) chord = null;
     } else {
       for (var i = 0; i < 12; i++) {
         _smoothed[i] *= 0.8;
       }
       chord = _stabilizer.update(null);
+      if (_note != null) chord = null;
     }
 
     return ListeningFrame(
@@ -246,12 +267,37 @@ class ChordDetector {
       levelDb: levelDb,
       hasSignal: hasSignal,
       chord: chord,
+      note: _note,
       candidates: ranked,
+      pitchClasses: classes,
       tuningCents: _tuning.cents,
     );
   }
 
+  /// Une note seule s'affiche, comme un accord, après quelques trames
+  /// d'affilée ; elle remplace alors l'accord affiché.
+  void _trackNote(int? solo) {
+    if (solo == null) {
+      _pendingNote = null;
+      _pendingNoteCount = 0;
+      return;
+    }
+    if (solo == _pendingNote) {
+      _pendingNoteCount++;
+    } else {
+      _pendingNote = solo;
+      _pendingNoteCount = 1;
+    }
+    if (_pendingNoteCount >= _stabilizer.confirmFrames && solo != _note) {
+      _note = solo;
+      _stabilizer.reset();
+    }
+  }
+
   void reset() {
+    _note = null;
+    _pendingNote = null;
+    _pendingNoteCount = 0;
     _writePos = 0;
     _filled = 0;
     _sinceHop = 0;

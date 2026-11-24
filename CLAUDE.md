@@ -141,6 +141,14 @@ Chaîne dans `lib/src/audio/`, sans dépendance native hors capture :
   résidus probables d'harmoniques 5, 7 et 9 d'une note plus grave (un Sol seul
   laisse un peu de Ré et de Si : Sol-Ré-Si ferait un accord). La quinte
   (harmonique 3) ne se tranche pas : un power chord peut se lire « sus2 ».
+- **Note seule** (`ChromaFrame.soloNote`) : la note la plus forte, si toutes
+  les autres notes entendues peuvent être ses harmoniques (à un niveau de
+  résidu : octaves sans limite, quinte aiguë ≤ 50 %, autres ≤ 30 % — au-delà,
+  c'est un vrai accord, ex. Do grave + Sol3 + Do4 + Mi4). Stabilisée comme un
+  accord (`ListeningFrame.note`) ; accord et note s'excluent, le dernier
+  confirmé reste affiché. Affichée en français avec l'octave en indice
+  (`ui/note_format.dart`, `widgets/note_label.dart`) : **Do3 = do central,
+  La3 = 440 Hz** (C4/A4 en notation anglo-saxonne), Mi grave de guitare = Mi1.
 - **Rémanence** (`NoteRemanence`, réglable 0,15–4 s, défaut 1,2 s) : chaque
   note pèse `exp(−âge/τ)`, l'âge courant depuis sa dernière attaque (remontée
   ×1,25 de **sa fondamentale** au-dessus de son creux : les harmoniques d'une
@@ -163,11 +171,16 @@ Chaîne dans `lib/src/audio/`, sans dépendance native hors capture :
   `practice.dart` (Dart pur) + `ui/practice_view.dart`. Les accords de la grille
   deviennent des étapes (doublons consécutifs fusionnés, N.C. sautés) ; une
   étape est validée quand l'accord attendu est entendu ~5 trames d'affilée, puis
-  on passe à la suivante. Jugement **tolérant** : même fondamentale + même
-  *famille* (maj/min/dim/aug/sus, extensions ignorées), et il suffit que
-  l'accord attendu soit à `tolerance` près du meilleur candidat
-  (`ListeningFrame.candidates`). Deux étapes équivalentes à l'oreille (C puis
-  C7) exigent une **nouvelle attaque** (remontée de niveau). La grille surligne
+  on passe à la suivante. Jugement **exact, note à note** (`chordTones` lit le
+  symbole iReal ou usuel) : les notes exigées (fondamentale, tierce ou sus,
+  7e/6te notée, quinte altérée) doivent être dans `ListeningFrame.pitchClasses`,
+  et aucune note qui en ferait un autre accord (autre tierce, 7e ou 6te non
+  notée, autre 7e) ne doit sonner nettement (chroma ≥ 0,25). Extensions (9,
+  11, 13, altérations) et quinte juste permises sans être exigées ; basse des
+  slash non exigée. Mesuré : 78/78 bonnes positions validées, 55/57 accords
+  « presque bons » (triade ↔ 7e) refusés ; restent les 7e portées par une
+  seule corde à peine audible. Deux étapes identiques à l'oreille (C puis C/E)
+  exigent une **nouvelle attaque** (remontée de niveau). La grille surligne
   l'accord courant, estompe les joués, défile seule ; toucher un accord y saute.
 - Le web n'a le micro qu'en **https ou localhost** (`make web` sur
   localhost:8090 : OK ; IP LAN : non). `wakelock_plus` garde l'écran allumé.

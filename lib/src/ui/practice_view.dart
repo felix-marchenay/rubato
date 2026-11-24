@@ -10,6 +10,7 @@ import 'theme.dart';
 import 'widgets/chord_grid_view.dart';
 import 'widgets/listening_settings_sheet.dart';
 import 'widgets/listening_widgets.dart';
+import 'widgets/note_label.dart';
 
 /// Mode entraînement : la grille du morceau, et un panneau qui écoute ce
 /// qu'on joue pour valider les accords un à un, dans l'ordre de la grille.
@@ -210,6 +211,7 @@ class PracticePanel extends StatelessWidget {
     final step = session.current!;
     final next = session.next;
     final heard = frame?.chord?.toChord();
+    final heardNote = frame?.note;
     final hearing = session.hearing;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.end,
@@ -254,13 +256,16 @@ class PracticePanel extends StatelessWidget {
           flex: 3,
           child: _Labelled(
             label: 'ENTENDU',
-            child: heard == null || !(frame?.hasSignal ?? false)
+            child: !(frame?.hasSignal ?? false) ||
+                    (heard == null && heardNote == null)
                 ? Text('—', style: RubatoType.serif(size: 22, color: p.line))
-                : _ChordLabel(
-                    chord: heard,
-                    size: 22,
-                    color: hearing ? p.brass : p.ink,
-                  ),
+                : heardNote != null
+                    ? NoteLabel(midi: heardNote, size: 22, color: p.ink)
+                    : _ChordLabel(
+                        chord: heard!,
+                        size: 22,
+                        color: hearing ? p.brass : p.ink,
+                      ),
           ),
         ),
       ],

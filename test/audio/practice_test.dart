@@ -31,22 +31,42 @@ List<double> play(PracticeSession session, Float64List signal) {
 }
 
 void main() {
-  group('familles d\'accords', () {
+  group('notes exigées / interdites selon l\'accord noté', () {
+    // (exigées, interdites), en demi-tons au-dessus de la fondamentale.
     const cases = {
-      '': ChordFamily.major, '7': ChordFamily.major, '^7#11': ChordFamily.major,
-      '13b9': ChordFamily.major, '7alt': ChordFamily.major, 'maj7': ChordFamily.major,
-      'add9': ChordFamily.major, '69': ChordFamily.major,
-      '-': ChordFamily.minor, '-7': ChordFamily.minor, 'm': ChordFamily.minor,
-      'm7': ChordFamily.minor, '-^7': ChordFamily.minor, '-b6': ChordFamily.minor,
-      'h7': ChordFamily.diminished, 'o7': ChordFamily.diminished,
-      '-7b5': ChordFamily.diminished, 'dim': ChordFamily.diminished,
-      '+': ChordFamily.augmented, '7#5': ChordFamily.augmented,
-      'sus': ChordFamily.suspended, '7sus': ChordFamily.suspended,
-      '9sus': ChordFamily.suspended, '2': ChordFamily.suspended,
+      '': ({0, 4}, {3, 9, 10, 11}),
+      '-': ({0, 3}, {4, 9, 10, 11}),
+      'm': ({0, 3}, {4, 9, 10, 11}),
+      '7': ({0, 4, 10}, {3, 9, 11}),
+      '9': ({0, 4, 10}, {3, 9, 11}),
+      '13': ({0, 4, 10}, {3, 11}),
+      '7#9': ({0, 4, 10}, {9, 11}),
+      '7alt': ({0, 4, 10}, {9, 11}),
+      '^7': ({0, 4, 11}, {3, 9, 10}),
+      'maj7': ({0, 4, 11}, {3, 9, 10}),
+      '^7#11': ({0, 4, 11}, {3, 9, 10}),
+      '-7': ({0, 3, 10}, {4, 9, 11}),
+      'm7': ({0, 3, 10}, {4, 9, 11}),
+      '-^7': ({0, 3, 11}, {4, 9, 10}),
+      'h7': ({0, 3, 6, 10}, {4, 9, 11}),
+      'm7b5': ({0, 3, 6, 10}, {4, 9, 11}),
+      'o': ({0, 3, 6}, {4, 9, 10, 11}),
+      'o7': ({0, 3, 6, 9}, {4, 10, 11}),
+      '+': ({0, 4, 8}, {3, 9, 10, 11}),
+      '6': ({0, 4, 9}, {3, 10, 11}),
+      '-6': ({0, 3, 9}, {4, 10, 11}),
+      '69': ({0, 4, 9}, {3, 10, 11}),
+      'sus': ({0, 5}, {3, 4, 9, 10, 11}),
+      '7sus': ({0, 5, 10}, {3, 4, 9, 11}),
+      'sus2': ({0, 2}, {3, 4, 9, 10, 11}),
+      '11': ({0, 10}, {3, 9, 11}),
+      '5': ({0, 7}, {3, 4, 9, 10, 11}),
     };
     for (final e in cases.entries) {
-      test('« ${e.key} » → ${e.value.name}', () {
-        expect(familyOf(e.key), e.value);
+      test('« ${e.key} »', () {
+        final t = chordTones(e.key);
+        expect(t.required, e.value.$1, reason: 'exigées');
+        expect(t.forbidden, e.value.$2, reason: 'interdites');
       });
     }
 
@@ -112,6 +132,34 @@ void main() {
     }
     play(session, mix);
     expect(session.index, 1, reason: 'C validé, G pas encore');
+  });
+
+  group('exact à la note près (Db / Db7)', () {
+    // Db : x4666x (Db Ab Db F) ; Db7 : x4646x (Db Ab B F).
+    PracticeSession sessionFor(String expected) => PracticeSession(
+        practiceSteps(chart([
+          [[expected]],
+        ])));
+
+    test('Db joué quand Db7 est noté : pas validé', () {
+      final session = sessionFor('Db7');
+      play(session, guitarStrum('x4666x', seconds: 1.5));
+      expect(session.index, 0);
+    });
+
+    test('Db7 joué quand Db est noté : pas validé', () {
+      final session = sessionFor('Db');
+      play(session, guitarStrum('x4646x', seconds: 1.5));
+      expect(session.index, 0);
+    });
+
+    test('le bon accord est validé', () {
+      for (final (expected, shape) in [('Db', 'x4666x'), ('Db7', 'x4646x')]) {
+        final session = sessionFor(expected);
+        play(session, guitarStrum(shape, seconds: 1.5));
+        expect(session.finished, isTrue, reason: expected);
+      }
+    });
   });
 
   test('un mauvais accord ne valide rien', () {

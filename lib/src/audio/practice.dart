@@ -5,63 +5,173 @@ import 'chord_matcher.dart';
 /// Position d'un accord dans la grille.
 typedef ChordRef = ({int section, int bar, int chord});
 
-/// Couleur d'un accord, ce que l'oreille (et le détecteur) distingue
-/// sûrement : les extensions (9, 11, 13, altérations) n'en changent pas.
-enum ChordFamily { major, minor, diminished, augmented, suspended }
+/// Notes d'un accord, en demi-tons au-dessus de la fondamentale.
+typedef ChordTones = ({Set<int> required, Set<int> forbidden});
 
-/// Famille d'une qualité, au vocabulaire iReal (`-7`, `h7`, `^7#11`…) comme
-/// usuel (`m7`, `maj7`, `dim`…).
-ChordFamily familyOf(String quality) {
-  final q = quality.trim();
-  final minorish = q.startsWith('-') || (q.startsWith('m') && !q.startsWith('maj'));
-  if (q.startsWith('h') ||
-      q.startsWith('o') ||
-      q.startsWith('dim') ||
-      (minorish && q.contains('b5'))) {
-    return ChordFamily.diminished;
+/// Lit une qualité d'accord, au vocabulaire iReal (`-7`, `h7`, `^7#11`,
+/// `7b9sus`…) comme usuel (`m7`, `maj7`, `dim`…), et dit quelles notes il faut
+/// entendre (`required`) et lesquelles en feraient un autre accord
+/// (`forbidden`) : l'autre tierce, une septième ou une sixte non notées.
+///
+/// Les extensions notées (9, 11, 13, altérations) sont permises sans être
+/// exigées, comme la quinte juste, souvent omise. La quinte n'est jamais
+/// interdite : le 3e harmonique de la fondamentale la fait toujours sonner.
+ChordTones chordTones(String quality) {
+  var q = quality.trim().replaceAll(RegExp(r'[(),\s]'), '');
+  if (q.startsWith('maj')) {
+    q = '^${q.substring(3)}';
+  } else if (q.startsWith('min')) {
+    q = '-${q.substring(3)}';
+  } else if (q.startsWith('m') && !q.startsWith('maj')) {
+    q = '-${q.substring(1)}';
+  } else if (q.startsWith('dim')) {
+    q = 'o${q.substring(3)}';
+  } else if (q.startsWith('aug')) {
+    q = '+${q.substring(3)}';
   }
-  if (minorish) return ChordFamily.minor;
-  if (q.startsWith('+') || q.startsWith('aug') || q.contains('#5')) {
-    return ChordFamily.augmented;
+  q = q.replaceAll('Δ', '^').replaceAll('ø', 'h').replaceAll('°', 'o');
+
+  int? third = 4; // null : accord de puissance, sans tierce
+  var thirdOptional = false;
+  var fifth = 7;
+  int? seventh; // 9 (7e diminuée), 10, 11
+  var sixth = false;
+  final extensions = <int>{};
+
+  if (q.startsWith('-')) {
+    third = 3;
+    q = q.substring(1);
+  } else if (q.startsWith('h')) {
+    third = 3;
+    fifth = 6;
+    seventh = 10;
+    q = q.substring(1).replaceFirst(RegExp(r'^7'), '');
+  } else if (q.startsWith('o')) {
+    third = 3;
+    fifth = 6;
+    q = q.substring(1);
+    if (q.startsWith('7')) {
+      seventh = 9;
+      q = q.substring(1);
+    }
+  } else if (q.startsWith('+')) {
+    fifth = 8;
+    q = q.substring(1);
   }
-  if (q.contains('sus') || q == '2') return ChordFamily.suspended;
-  return ChordFamily.major;
+  if (q.startsWith('^')) {
+    seventh = 11;
+    q = q.substring(1);
+  }
+  final number = RegExp(r'^(69|13|11|9|7|6|5|2)').firstMatch(q)?.group(1);
+  if (number != null) {
+    q = q.substring(number.length);
+    switch (number) {
+      case '7':
+        seventh ??= 10;
+      case '9':
+        seventh ??= 10;
+        extensions.add(2);
+      case '11':
+        seventh ??= 10;
+        extensions.addAll([2, 5]);
+        // C11 se joue le plus souvent sans tierce majeure.
+        if (third == 4) thirdOptional = true;
+      case '13':
+        seventh ??= 10;
+        extensions.addAll([2, 9]);
+      case '6':
+        sixth = true;
+      case '69':
+        sixth = true;
+        extensions.add(2);
+      case '5':
+        third = null;
+      case '2':
+        third = 2;
+    }
+  }
+  if (q.contains('sus2')) {
+    third = 2;
+  } else if (q.contains('sus')) {
+    third = 5;
+  }
+  if (q.contains('add9') || q.contains('add2')) extensions.add(2);
+  if (q.contains('b5')) fifth = 6;
+  if (q.contains('#5')) fifth = 8;
+  if (q.contains('b9')) extensions.add(1);
+  if (q.contains('#9')) extensions.add(3);
+  if (q.contains('#11')) extensions.add(6);
+  if (q.contains('b13') || q.contains('b6')) extensions.add(8);
+  if (q.contains('alt')) extensions.addAll([1, 3, 6, 8]);
+
+  final required = <int>{
+    0,
+    if (third != null && !thirdOptional) third,
+    if (third == null) 7,
+    ?seventh,
+    if (sixth) 9,
+    if (fifth != 7) fifth,
+  };
+  final forbidden = <int>{
+    if (third == 4) 3,
+    if (third == 3) 4,
+    if (third == null || third == 2 || third == 5) ...[3, 4],
+    if (thirdOptional) 3,
+    if (seventh == null && !sixth) ...[9, 10, 11],
+    if (seventh == 10) 11,
+    if (seventh == 11) 10,
+    if ((seventh == 9 || sixth) && seventh != 10) ...[10, 11],
+    if (seventh == 10 && !sixth) 9,
+    if (seventh == 11 && !sixth) 9,
+  }..removeAll({...required, ...extensions});
+  return (required: required, forbidden: forbidden);
 }
 
-/// Ce qu'on accepte d'entendre pour un accord de la grille.
+/// Ce qu'il faut entendre pour valider un accord de la grille, à la note
+/// près : ses notes exigées présentes, aucune note qui en ferait un autre
+/// accord (cf. [chordTones]). La basse d'un accord slash n'est pas exigée.
 class ChordExpectation {
   final int root;
-  final Set<ChordFamily> families;
 
-  const ChordExpectation(this.root, this.families);
+  /// Classes de hauteur absolues (bit i = classe i).
+  final int required;
+  final int forbidden;
+
+  const ChordExpectation(this.root, this.required, this.forbidden);
 
   /// Null pour un accord sans fondamentale lisible (N.C., symbole inconnu).
   static ChordExpectation? of(Chord chord) {
     final root = chord.root;
     if (chord.isNoChord || root == null) return null;
-    final q = chord.quality.trim();
-    final family = familyOf(q);
-    return ChordExpectation(root.value, {
-      family,
-      // Accord de puissance (C5) : ni majeur ni mineur, et le 3e harmonique
-      // de la quinte (un Ré pour C5) le fait souvent sonner « sus2 ».
-      if (q == '5')
-        ...[ChordFamily.major, ChordFamily.minor, ChordFamily.suspended],
-      // Un accord augmenté s'entend souvent comme majeur (la quinte bouge).
-      if (family == ChordFamily.augmented) ChordFamily.major,
-      // C11 se joue souvent sans tierce.
-      if (q.startsWith('11')) ChordFamily.suspended,
-    });
+    final tones = chordTones(chord.quality);
+    int mask(Set<int> intervals) => intervals.fold(
+        0, (m, i) => m | 1 << (root.value + i) % 12);
+    return ChordExpectation(
+      root.value,
+      mask(tones.required),
+      mask(tones.forbidden),
+    );
   }
 
-  bool accepts(ChordCandidate c) =>
-      c.root == root && families.contains(familyOf(c.quality));
+  /// Une note interdite ne compte que si elle sonne nettement (chroma) : un
+  /// résidu d'harmonique ou une corde voisine effleurée ne disqualifie pas.
+  static const forbiddenLevel = 0.25;
 
-  /// Deux étapes que l'oreille ne distingue pas (C puis C7, C puis C/E).
+  bool heardIn(ListeningFrame frame) {
+    if ((frame.pitchClasses & required) != required) return false;
+    for (var pc = 0; pc < 12; pc++) {
+      if (forbidden & (1 << pc) != 0 && frame.chroma[pc] >= forbiddenLevel) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /// Deux étapes identiques à l'oreille (C puis C/E).
   bool sameAs(ChordExpectation other) =>
       root == other.root &&
-      families.length == other.families.length &&
-      families.containsAll(other.families);
+      required == other.required &&
+      forbidden == other.forbidden;
 }
 
 /// Un accord à jouer. Les accords identiques qui se suivent (C | C | C)
@@ -104,19 +214,14 @@ class PracticeSession {
   PracticeSession(
     this.steps, {
     this.confirmFrames = 5,
-    this.tolerance = 0.05,
     this.minScore = 0.55,
     this.attackDb = 6,
   });
 
   final List<PracticeStep> steps;
 
-  /// Trames d'affilée (~45 ms chacune) où l'accord doit être entendu.
+  /// Trames d'affilée (~30 ms chacune) où l'accord doit être entendu.
   final int confirmFrames;
-
-  /// On sait quel accord est attendu : il suffit qu'il soit presque aussi
-  /// probable que le meilleur candidat (C6 et Am7 ont les mêmes notes).
-  final double tolerance;
   final double minScore;
 
   /// Remontée de niveau (dB) qui signale une nouvelle attaque.
@@ -151,21 +256,17 @@ class PracticeSession {
     }
     _hearing = !_needsAttack &&
         frame.hasSignal &&
-        _matches(frame.candidates, step.expectation);
+        _isChord(frame.candidates) &&
+        step.expectation.heardIn(frame);
     _streak = _hearing ? _streak + 1 : 0;
     if (_streak < confirmFrames) return false;
     _goTo(_index + 1, after: step, levelDb: frame.levelDb);
     return true;
   }
 
-  bool _matches(List<ChordCandidate> ranked, ChordExpectation e) {
-    if (ranked.isEmpty || ranked.first.score < minScore) return false;
-    for (final c in ranked) {
-      if (c.score < ranked.first.score - tolerance) return false;
-      if (e.accepts(c)) return c.score >= minScore;
-    }
-    return false;
-  }
+  /// Assez de notes, et un contenu tonal (pas du bruit).
+  bool _isChord(List<ChordCandidate> ranked) =>
+      ranked.isNotEmpty && ranked.first.score >= minScore;
 
   /// Aller à l'étape [i] (retour arrière, saut, clic sur la grille).
   void jumpTo(int i) => _goTo(i.clamp(0, steps.length));

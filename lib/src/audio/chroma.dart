@@ -25,14 +25,29 @@ class ChromaFrame {
   /// grave au plus aigu.
   final Float64List? notes;
 
-  /// Nombre de classes de hauteur distinctes nettement présentes : moins de
-  /// trois, ce n'est pas un accord (une note seule, une quinte).
-  final int noteCount;
+  /// Classes de hauteur nettement présentes (bit i = classe i), hors résidus
+  /// probables d'harmoniques.
+  final int presentClasses;
+
+  /// Note jouée seule (MIDI, 60 = do central) : toutes les autres notes
+  /// entendues peuvent être ses harmoniques. Null si plusieurs notes sonnent.
+  final int? soloNote;
+
+  /// Nombre de ces classes : moins de trois, ce n'est pas un accord (une note
+  /// seule, une quinte).
+  int get noteCount {
+    var n = 0;
+    for (var c = presentClasses; c != 0; c &= c - 1) {
+      n++;
+    }
+    return n;
+  }
 
   const ChromaFrame({
     required this.chroma,
     this.notes,
-    this.noteCount = 0,
+    this.presentClasses = 0,
+    this.soloNote,
     this.bassPitchClass,
     this.bassStrength = 0,
     this.tuningX = 0,
@@ -295,10 +310,8 @@ class ChromaAnalyzer {
       }
       notes[i] = x < noteFloor ? 0 : math.log(1 + compression * x) / norm;
     }
-    var noteCount = 0;
-    for (; classes != 0; classes &= classes - 1) {
-      noteCount++;
-    }
+
+    final solo = _soloNote(estimate.levels, maxNote);
 
     final chroma = Float64List(12);
     for (var i = 0; i < notes.length; i++) {
@@ -330,7 +343,8 @@ class ChromaAnalyzer {
     return ChromaFrame(
       chroma: chroma,
       notes: notes,
-      noteCount: noteCount,
+      presentClasses: classes,
+      soloNote: solo,
       bassPitchClass: bass,
       bassStrength: bassStrength,
       tuningX: estimate.tuningX,
@@ -353,6 +367,41 @@ class ChromaAnalyzer {
       if (j >= 0 && levels[i] <= ratio * levels[j]) return true;
     }
     return false;
+  }
+
+  /// Écarts des harmoniques au-dessus de la fondamentale (7e compris : son
+  /// résidu existe même s'il ne tombe pas juste), et jusqu'à quel niveau,
+  /// relativement à la fondamentale, une note à cette place peut n'être qu'un
+  /// résidu. Les octaves ne changent pas la note ; au-delà, une note plus
+  /// forte est une vraie note (Do grave + Sol3 + Do4 + Mi4 est un accord).
+  static const _harmonicResidue = {
+    12: double.infinity, 24: double.infinity, 36: double.infinity,
+    48: double.infinity, //
+    19: 0.5, 31: 0.5, 43: 0.5,
+    28: 0.3, 34: 0.3, 38: 0.3, 40: 0.3, 47: 0.3,
+  };
+
+  /// La note la plus forte, si toutes les autres notes au-dessus du plancher
+  /// peuvent être ses harmoniques. On descend à l'octave inférieure quand elle
+  /// pèse au moins moitié autant : une fondamentale grave mal captée par le
+  /// micro laisse parfois son 2e harmonique dominer.
+  int? _soloNote(Float64List levels, double maxNote) {
+    var top = 0;
+    for (var i = 1; i < levels.length; i++) {
+      if (levels[i] > levels[top]) top = i;
+    }
+    var fundamental = top;
+    for (var i = top - 12; i >= 0; i -= 12) {
+      if (levels[i] >= 0.5 * levels[top]) fundamental = i;
+    }
+    for (var i = 0; i < levels.length; i++) {
+      if (i == fundamental || levels[i] < noteFloor * maxNote) continue;
+      final residue = _harmonicResidue[i - fundamental];
+      if (residue == null || levels[i] > residue * levels[fundamental]) {
+        return null;
+      }
+    }
+    return minMidi + fundamental;
   }
 
   /// Médiane des amplitudes sur ±1/6 d'octave autour de la case [k]

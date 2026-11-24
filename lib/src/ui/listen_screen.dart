@@ -12,6 +12,7 @@ import 'chord_format.dart';
 import 'theme.dart';
 import 'widgets/listening_settings_sheet.dart';
 import 'widgets/listening_widgets.dart';
+import 'widgets/note_label.dart';
 
 /// Écran « Écouter » : le micro entend la musique jouée, l'écran affiche
 /// l'accord reconnu, les notes perçues et les derniers accords.
@@ -98,6 +99,7 @@ class _ListenScreenState extends State<ListenScreen> {
     final status = _listening.status;
     final listening = _listening.isListening;
     final chord = frame?.chord;
+    final note = frame?.note;
     return Column(
       children: [
         Padding(
@@ -112,9 +114,10 @@ class _ListenScreenState extends State<ListenScreen> {
           child: Center(
             child: _BigChord(
               chord: chord?.toChord(),
+              note: note,
               held: !listening || (frame != null && !frame.hasSignal),
               hint: listening
-                  ? 'Joue un accord près du téléphone.'
+                  ? 'Joue un accord ou une note près du téléphone.'
                   : 'Touche le micro pour écouter.',
             ),
           ),
@@ -124,6 +127,7 @@ class _ListenScreenState extends State<ListenScreen> {
           child: _ChromaBars(
             chroma: listening ? frame?.chroma : null,
             chord: chord,
+            notePc: note == null ? null : note % 12,
           ),
         ),
         const SizedBox(height: 20),
@@ -182,21 +186,42 @@ class _StatusLine extends StatelessWidget {
   }
 }
 
-/// L'accord reconnu, gravé en grand. Atténué quand le son s'est tu (c'est le
-/// dernier accord entendu).
+/// L'accord reconnu (ou la note jouée seule), gravé en grand. Atténué quand
+/// le son s'est tu.
 class _BigChord extends StatelessWidget {
   final Chord? chord;
+  final int? note;
   final bool held;
   final String hint;
 
-  const _BigChord({required this.chord, required this.held, required this.hint});
+  const _BigChord({
+    required this.chord,
+    required this.note,
+    required this.held,
+    required this.hint,
+  });
 
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
     final c = chord;
+    final n = note;
     final Widget content;
-    if (c == null) {
+    if (n != null) {
+      content = Padding(
+        key: ValueKey('note$n'),
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: NoteLabel(
+            midi: n,
+            size: 140,
+            color: p.ink,
+            octaveColor: p.brass,
+          ),
+        ),
+      );
+    } else if (c == null) {
       content = Column(
         key: const ValueKey('none'),
         mainAxisSize: MainAxisSize.min,
@@ -269,7 +294,14 @@ class _ChromaBars extends StatelessWidget {
   final Float64List? chroma;
   final ChordCandidate? chord;
 
-  const _ChromaBars({required this.chroma, required this.chord});
+  /// Classe de hauteur de la note jouée seule, mise en laiton.
+  final int? notePc;
+
+  const _ChromaBars({
+    required this.chroma,
+    required this.chord,
+    this.notePc,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -288,8 +320,8 @@ class _ChromaBars extends StatelessWidget {
 
   Widget _bar(BuildContext context, int pc, RubatoPalette p) {
     final c = chord;
-    final inChord = c != null && c.template.contains(pc);
-    final isRoot = c != null && c.root == pc;
+    final inChord = (c != null && c.template.contains(pc)) || notePc == pc;
+    final isRoot = (c != null && c.root == pc) || notePc == pc;
     final value = chroma?[pc] ?? 0;
     final color = isRoot
         ? p.brass
