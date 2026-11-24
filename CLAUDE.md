@@ -11,8 +11,9 @@ Rien n'est installé sur l'hôte : Flutter tourne dans le conteneur
 
 ```bash
 make web        # serveur web (voir port ci-dessous)
-make apk        # APK Android release
+make apk        # APK Android release (signé avec la clé stable, build n° croissant)
 make apk-telegram   # build APK + envoi Telegram (config dans .env)
+make release NOTES="…"   # publier une mise à jour : l'appli la propose d'elle-même
 make api-run    # backend Go de recherche → http://localhost:8091
 make search creep radiohead   # recherche via le backend Go, résumé lisible
 make api-deploy # déployer le backend sur Fly.io (cf. backend/README.md)
@@ -49,10 +50,14 @@ Tout est centralisé dans `lib/src/ui/theme.dart` (`RubatoPalette`, `RubatoType`
   `search_cache.dart` sur `local_db.dart` (+ `_io`/`_web`/`_stub`) pour le cache,
   `key_value_store.dart` (contrat du stockage), `lyrics_store.dart` /
   `user_library_store.dart` (+ `_io`/`_web`/`_stub`, persistance locale).
+- `lib/src/audio/` : reconnaissance d'accords au micro, **Dart pur** (testable
+  sans micro) sauf `mic_input.dart` (paquet `record`). Cf. section dédiée.
 - `lib/src/ui/` : `library_screen.dart`, `chart_screen.dart` (sélecteur 3 vues
   **Grille · Paroles · Mélodie**), `online_search_screen.dart` (recherche en ligne),
-  `widgets/` (`chord_grid_view`, `lyric_sheet_view`, `lyrics_pane`, `score_view`,
-  `meta_chip`).
+  `listen_screen.dart` (écoute au micro), `practice_view.dart` (entraînement
+  sur la grille), `widgets/` (`chord_grid_view`, `lyric_sheet_view`,
+  `lyrics_pane`, `score_view`, `meta_chip`, `pill_toggle`, `listening_widgets`,
+  `update_banner`).
 - `backend/` : **backend Go** de recherche en ligne (stdlib pure, zéro dépendance).
   Voir [`backend/README.md`](backend/README.md).
 
@@ -110,6 +115,112 @@ Détails complets dans [`backend/README.md`](backend/README.md) ; l'essentiel :
   (`.github/workflows/deploy-backend.yml`, secret `FLY_API_TOKEN`, jeton créé par
   `make api-token`). Détails, coûts et limites :
   [`backend/README.md`](backend/README.md).
+
+## Écouter : accord joué reconnu au micro
+
+Écran `listen_screen.dart` (icône « onde » dans la barre de la Bibliothèque),
+et mode entraînement sur la grille d'un morceau (voir plus bas).
+Chaîne dans `lib/src/audio/`, sans dépendance native hors capture :
+
+- `mic_input.dart` : `record` en flux PCM 16 bits mono (44,1 kHz Android, 48 kHz
+  web), **AGC / anti-écho / anti-bruit coupés** (ils abîment la musique), source
+  Android `unprocessed`. `pcm.dart` : décodage + sous-échantillonnage filtré.
+- `chord_detector.dart` : ramène à ~11 kHz, fenêtre 4096 (~0,37 s) **asymétrique**
+  (sommet à 85 % : le son récent pèse le plus), pas de 30 ms ; seuil de niveau
+  (dBFS, réglable) ; stabilisation (3 trames d'affilée + marge) et accord gardé
+  pendant les silences. **Latence** mesurée sur des enchaînements grattés :
+  ~205 ms (contre ~320 ms en Hann symétrique / pas de 46 ms), sans perte de
+  précision. Essais écartés : fenêtre de 0,19 s (précision en baisse), raccourci
+  « accord très net » et analyse calée sur l'attaque (clignotement ou plus lent).
+  Côté capture, `streamBufferSize` ≈ 20 ms (Android envoyait 80–170 ms).
+- `chroma.dart` : FFT (`fftea`) → pics nets (plancher = **médiane** locale) →
+  **NNLS** (notes × modèle d'harmoniques, à la Chordino) → chroma 12 classes +
+  basse (note la plus grave présente) + accordage estimé (`TuningTracker`).
+- **Pas d'accord sans 3 notes** : `summarize` compte les classes de hauteur
+  au-dessus de `noteFloor` (6 % de la note la plus forte), sans compter les
+  résidus probables d'harmoniques 5, 7 et 9 d'une note plus grave (un Sol seul
+  laisse un peu de Ré et de Si : Sol-Ré-Si ferait un accord). La quinte
+  (harmonique 3) ne se tranche pas : un power chord peut se lire « sus2 ».
+- **Note seule** (`ChromaFrame.soloNote`) : la note la plus forte, si toutes
+  les autres notes entendues peuvent être ses harmoniques (à un niveau de
+  résidu : octaves sans limite, quinte aiguë ≤ 50 %, autres ≤ 30 % — au-delà,
+  c'est un vrai accord, ex. Do grave + Sol3 + Do4 + Mi4). Stabilisée comme un
+  accord (`ListeningFrame.note`) ; accord et note s'excluent, le dernier
+  confirmé reste affiché. Affichée en français avec l'octave en indice
+  (`ui/note_format.dart`, `widgets/note_label.dart`) : **Do3 = do central,
+  La3 = 440 Hz** (C4/A4 en notation anglo-saxonne), Mi grave de guitare = Mi1.
+- **Rémanence** (`NoteRemanence`, réglable 0,15–4 s, défaut 1,2 s) : chaque
+  note pèse `exp(−âge/τ)`, l'âge courant depuis sa dernière attaque (remontée
+  ×1,25 de **sa fondamentale** au-dessus de son creux : les harmoniques d'une
+  nouvelle note ne « rajeunissent » pas une ancienne). Les notes de l'accord d'avant qui résonnent
+  s'effacent devant les nouvelles ; une rémanence longue sert aux arpèges.
+- Réglages (sensibilité, rémanence, vocabulaire) : feuille commune
+  `widgets/listening_settings_sheet.dart`, mémorisés via `LocalDb`
+  (`data/listening_settings_store.dart`, clé `listening.settings`).
+- `chord_matcher.dart` / `chord_vocabulary.dart` : corrélation à des gabarits
+  (12 fondamentales × qualités au vocabulaire iReal), bonus basse = fondamentale,
+  renversements (`C/E`). Vocabulaires Simple / Standard / Jazz.
+- **Tests** (`test/audio/`) sur signaux **synthétiques** (piano additif, guitare
+  Karplus-Strong à pente réaliste) : pas d'enregistrement réel dans le dépôt.
+  Limite connue : une 7e portée par une seule corde est parfois lue comme la
+  triade. Réglages issus d'un balayage sur ce corpus ; à revoir sur vrais sons.
+- `listening_controller.dart` : micro + détecteur + cycle de vie (autorisation,
+  wakelock, coupure en arrière-plan), partagé par l'écran Écouter et le mode
+  entraînement ; widgets communs dans `ui/widgets/listening_widgets.dart`.
+- **Mode entraînement** (bouton « onde » de l'écran morceau, vue Grille) :
+  `practice.dart` (Dart pur) + `ui/practice_view.dart`. Les accords de la grille
+  deviennent des étapes (doublons consécutifs fusionnés, N.C. sautés) ; une
+  étape est validée quand l'accord attendu est entendu ~5 trames d'affilée, puis
+  on passe à la suivante. Jugement **exact, note à note** (`chordTones` lit le
+  symbole iReal ou usuel) : les notes exigées (fondamentale, tierce ou sus,
+  7e/6te notée, quinte altérée) doivent être dans `ListeningFrame.pitchClasses`,
+  et aucune note qui en ferait un autre accord (autre tierce, 7e ou 6te non
+  notée, autre 7e) ne doit sonner nettement (chroma ≥ 0,25). Extensions (9,
+  11, 13, altérations) et quinte juste permises sans être exigées ; basse des
+  slash non exigée. Mesuré : 78/78 bonnes positions validées, 55/57 accords
+  « presque bons » (triade ↔ 7e) refusés ; restent les 7e portées par une
+  seule corde à peine audible. Deux étapes identiques à l'oreille (C puis C/E)
+  exigent une **nouvelle attaque** (remontée de niveau). La grille surligne
+  l'accord courant, estompe les joués, défile seule ; toucher un accord y saute.
+- Le web n'a le micro qu'en **https ou localhost** (`make web` sur
+  localhost:8090 : OK ; IP LAN : non). `wakelock_plus` garde l'écran allumé.
+
+## Guide des styles
+
+Icône « livre » de la Bibliothèque → `ui/guide_screen.dart` (sommaire par
+famille + recherche) → `ui/style_guide_screen.dart` (fiche antisèche : tempo
+avec jauge, mesure, placement, tonalités, progressions, gammes, conseils
+accompagnement / mélodie / basse-batterie, son, pièges, références).
+- Modèle `domain/style_guide.dart`, contenu statique `data/style_guides.dart`
+  (27 styles). Progressions au vocabulaire iReal, écrites dans la tonique de
+  référence de la fiche (`tonic`) ; une chaîne = une mesure.
+- **Transposition** par la tonique choisie : `transposeNote` garde la fonction
+  de la note (un ♭VII reste un ♭VII), simplifie Fb/Cb/E#/B#.
+- Chaque progression lance le **mode entraînement** (`PracticeView`) dans la
+  tonique choisie. `test/style_guide_test.dart` vérifie que tous les accords
+  sont lisibles et jouables.
+- Rendu d'accord gravé partagé : `widgets/chord_symbol.dart` (aussi utilisé
+  par la grille).
+
+## Mises à jour de l'appli Android (hors Play Store)
+
+- **Clé de signature stable** : `android/app/rubato-release.jks` +
+  `android/key.properties` (git-ignorés, créés une fois par `make keystore`,
+  copie de secours dans `~/.config/rubato/signing/`). ⚠️ **Ne jamais la
+  régénérer ni la perdre** : Android refuse une mise à jour signée par une autre
+  clé (il faudrait désinstaller, données locales perdues). Sans `key.properties`,
+  Gradle retombe sur la clé de debug, régénérée à chaque conteneur.
+- **N° de build** = minutes depuis 2024-01-01 UTC (`BUILD_NUMBER` du Makefile),
+  toujours croissant ; la version affichée reste celle de `pubspec.yaml`.
+- **`make release NOTES="…"`** : build + `scripts/publish-release.sh` (sur
+  l'hôte, via `gh`) → release GitHub unique **`android-latest`** dont on remplace
+  l'APK et `latest.json` (`{version, build, url, sha256, notes}`).
+- **Côté appli** : `app_update_service.dart` lit `latest.json` au lancement
+  (Android seulement, échec silencieux) ; `widgets/update_banner.dart` en haut de
+  la Bibliothèque → téléchargement (`ota_update`, sha256 vérifié) → installeur
+  d'Android, qui demande **toujours** une confirmation (impossible autrement hors
+  Play Store). Manifest : `REQUEST_INSTALL_PACKAGES` + `FileProvider`
+  (`res/xml/filepaths.xml`). URL surchargeable par `--dart-define=RUBATO_UPDATE_URL`.
 
 ## Représentations & contenu
 

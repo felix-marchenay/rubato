@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import '../data/library_repository.dart';
 import '../domain/chord_chart.dart';
 import '../domain/song.dart';
+import 'practice_view.dart';
 import 'theme.dart';
 import 'widgets/chord_grid_view.dart';
 import 'widgets/lyrics_pane.dart';
+import 'widgets/pill_toggle.dart';
 import 'widgets/score_view.dart';
 
 enum _ViewMode { grid, lyrics, melody }
@@ -25,8 +27,15 @@ class ChartScreen extends StatefulWidget {
 class _ChartScreenState extends State<ChartScreen> {
   late _ViewMode _mode;
 
+  /// Mode entraînement : le micro valide les accords de la grille un à un.
+  bool _practicing = false;
+
   Representation? get _grid => widget.song.primaryChordGrid;
   Representation? get _score => widget.song.primaryScore;
+
+  // Chargée une fois : l'écran se reconstruit souvent (changement de vue).
+  late final Future<ChordChart>? _chart =
+      _grid == null ? null : widget.repository.loadChart(_grid!);
 
   @override
   void initState() {
@@ -67,6 +76,18 @@ class _ChartScreenState extends State<ChartScreen> {
               ),
           ],
         ),
+        actions: [
+          if (_mode == _ViewMode.grid && _grid != null)
+            IconButton(
+              onPressed: () => setState(() => _practicing = !_practicing),
+              icon: Icon(_practicing ? Icons.close : Icons.graphic_eq),
+              color: p.brass,
+              tooltip: _practicing
+                  ? 'Arrêter l\'entraînement'
+                  : 'S\'entraîner : jouer les accords un à un',
+            ),
+          const SizedBox(width: 8),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(52),
           child: Column(
@@ -74,9 +95,17 @@ class _ChartScreenState extends State<ChartScreen> {
             children: [
               Padding(
                 padding: const EdgeInsets.only(bottom: 8),
-                child: _ViewToggle(
-                  mode: _mode,
-                  onChanged: (m) => setState(() => _mode = m),
+                child: PillToggle<_ViewMode>(
+                  value: _mode,
+                  options: const {
+                    _ViewMode.grid: 'Grille',
+                    _ViewMode.lyrics: 'Paroles',
+                    _ViewMode.melody: 'Mélodie',
+                  },
+                  onChanged: (m) => setState(() {
+                    _mode = m;
+                    _practicing = false;
+                  }),
                 ),
               ),
               Container(height: 1, color: p.line),
@@ -91,12 +120,11 @@ class _ChartScreenState extends State<ChartScreen> {
   Widget _body() {
     switch (_mode) {
       case _ViewMode.grid:
-        final rep = _grid;
-        if (rep == null) {
+        if (_chart == null) {
           return const _Message('Pas de grille d\'accords pour ce morceau.');
         }
         return FutureBuilder<ChordChart>(
-          future: widget.repository.loadChart(rep),
+          future: _chart,
           builder: (context, snapshot) {
             if (snapshot.connectionState != ConnectionState.done) {
               return const Center(child: CircularProgressIndicator());
@@ -104,7 +132,10 @@ class _ChartScreenState extends State<ChartScreen> {
             if (snapshot.hasError) {
               return _Message('Erreur de chargement : ${snapshot.error}');
             }
-            return ChordGridView(chart: snapshot.data!);
+            final chart = snapshot.data!;
+            return _practicing
+                ? PracticeView(chart: chart)
+                : ChordGridView(chart: chart);
           },
         );
       case _ViewMode.lyrics:
@@ -127,57 +158,6 @@ class _ChartScreenState extends State<ChartScreen> {
           scoreRep: rep,
         );
     }
-  }
-}
-
-/// Sélecteur Grille · Paroles · Mélodie, façon pilule (DA « Encre & Papier »).
-class _ViewToggle extends StatelessWidget {
-  final _ViewMode mode;
-  final ValueChanged<_ViewMode> onChanged;
-  const _ViewToggle({required this.mode, required this.onChanged});
-
-  @override
-  Widget build(BuildContext context) {
-    final p = context.palette;
-    return Container(
-      decoration: BoxDecoration(
-        border: Border.all(color: p.line),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      padding: const EdgeInsets.all(2),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _seg(context, 'Grille', _ViewMode.grid),
-          _seg(context, 'Paroles', _ViewMode.lyrics),
-          _seg(context, 'Mélodie', _ViewMode.melody),
-        ],
-      ),
-    );
-  }
-
-  Widget _seg(BuildContext context, String label, _ViewMode value) {
-    final p = context.palette;
-    final active = mode == value;
-    return GestureDetector(
-      onTap: active ? null : () => onChanged(value),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-        decoration: BoxDecoration(
-          color: active ? p.brass : Colors.transparent,
-          borderRadius: BorderRadius.circular(18),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w700,
-            color: active ? p.onBrass : p.inkMuted,
-          ),
-        ),
-      ),
-    );
   }
 }
 
