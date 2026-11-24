@@ -185,6 +185,23 @@ Chaîne dans `lib/src/audio/`, sans dépendance native hors capture :
 - Le web n'a le micro qu'en **https ou localhost** (`make web` sur
   localhost:8090 : OK ; IP LAN : non). `wakelock_plus` garde l'écran allumé.
 
+## Guide des styles
+
+Icône « livre » de la Bibliothèque → `ui/guide_screen.dart` (sommaire par
+famille + recherche) → `ui/style_guide_screen.dart` (fiche antisèche : tempo
+avec jauge, mesure, placement, tonalités, progressions, gammes, conseils
+accompagnement / mélodie / basse-batterie, son, pièges, références).
+- Modèle `domain/style_guide.dart`, contenu statique `data/style_guides.dart`
+  (27 styles). Progressions au vocabulaire iReal, écrites dans la tonique de
+  référence de la fiche (`tonic`) ; une chaîne = une mesure.
+- **Transposition** par la tonique choisie : `transposeNote` garde la fonction
+  de la note (un ♭VII reste un ♭VII), simplifie Fb/Cb/E#/B#.
+- Chaque progression lance le **mode entraînement** (`PracticeView`) dans la
+  tonique choisie. `test/style_guide_test.dart` vérifie que tous les accords
+  sont lisibles et jouables.
+- Rendu d'accord gravé partagé : `widgets/chord_symbol.dart` (aussi utilisé
+  par la grille).
+
 ## Mises à jour de l'appli Android (hors Play Store)
 
 - **Clé de signature stable** : `android/app/rubato-release.jks` +

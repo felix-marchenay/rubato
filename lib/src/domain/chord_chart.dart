@@ -31,6 +31,16 @@ class PitchClass {
 
   PitchClass transpose(int semitones) => PitchClass((value + semitones) % 12);
 
+  static const _sharpNames = [
+    'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B',
+  ];
+  static const _flatNames = [
+    'C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B',
+  ];
+
+  String name({bool flats = true}) =>
+      (flats ? _flatNames : _sharpNames)[value];
+
   @override
   bool operator ==(Object other) => other is PitchClass && other.value == value;
   @override

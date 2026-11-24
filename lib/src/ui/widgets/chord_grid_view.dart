@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 
 import '../../audio/practice.dart' show ChordRef;
 import '../../domain/chord_chart.dart';
-import '../chord_format.dart';
 import '../theme.dart';
+import 'chord_symbol.dart';
 import 'meta_chip.dart';
 
 /// Surlignage du mode entraînement : accord à jouer, accords déjà joués.
@@ -319,7 +319,7 @@ class _BarCell extends StatelessWidget {
 
 enum _ChordState { normal, current, done }
 
-/// Accord gravé : racine en serif, qualité en exposant, basse atténuée.
+/// Accord de la grille, selon son état en mode entraînement.
 class _ChordText extends StatelessWidget {
   final Chord chord;
   final bool compact;
@@ -333,49 +333,10 @@ class _ChordText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
-    final parts = ChordFormat.parts(chord);
-    final rootSize = compact ? 17.0 : 22.0;
-
-    if (parts.isNoChord) {
-      return Text(
-        'N.C.',
-        textAlign: TextAlign.center,
-        style: RubatoType.serif(
-          size: rootSize * 0.8,
-          weight: FontWeight.w500,
-          color: p.inkMuted,
-          style: FontStyle.italic,
-        ),
-      );
-    }
-
-    final current = state == _ChordState.current;
-    final ink = current ? p.onBrassTint : p.ink;
-    final rootStyle = RubatoType.serif(
-        size: rootSize, weight: FontWeight.w600, color: ink);
-    final qualityStyle = RubatoType.serif(
-        size: rootSize * 0.58, weight: FontWeight.w600, color: ink);
-    final bassStyle = RubatoType.serif(
-        size: rootSize * 0.62, weight: FontWeight.w500, color: p.inkMuted);
-
-    final text = Text.rich(
-      TextSpan(
-        children: [
-          TextSpan(text: parts.root, style: rootStyle),
-          if (parts.quality.isNotEmpty)
-            WidgetSpan(
-              alignment: PlaceholderAlignment.top,
-              child: Padding(
-                padding: const EdgeInsets.only(left: 1),
-                child: Text(parts.quality, style: qualityStyle),
-              ),
-            ),
-          if (parts.bass != null)
-            TextSpan(text: '/${parts.bass}', style: bassStyle),
-        ],
-      ),
-      textAlign: TextAlign.center,
-      overflow: TextOverflow.visible,
+    final text = ChordSymbol(
+      chord: chord,
+      size: compact ? 17.0 : 22.0,
+      color: state == _ChordState.current ? p.onBrassTint : null,
     );
     return switch (state) {
       _ChordState.normal => text,

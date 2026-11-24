@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../data/library_repository.dart';
 import '../domain/song.dart';
 import 'chart_screen.dart';
+import 'guide_screen.dart';
 import 'listen_screen.dart';
 import 'online_search_screen.dart';
 import 'theme.dart';
@@ -59,6 +60,14 @@ class _LibraryScreenState extends State<LibraryScreen> {
         titleSpacing: 20,
         title: const _Wordmark(),
         actions: [
+          IconButton(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const GuideScreen()),
+            ),
+            icon: const Icon(Icons.auto_stories_outlined),
+            color: p.brass,
+            tooltip: 'Guide des styles',
+          ),
           IconButton(
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const ListenScreen()),
